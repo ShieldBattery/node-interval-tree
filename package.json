@@ -1,0 +1,34 @@
+{
+  "name": "node-interval-tree",
+  "version": "0.1.0",
+  "description": "Implementation of interval tree data structure.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha -R spec --compilers js:babel/register --recursive test/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/2Pacalypse-/node-interval-tree"
+  },
+  "keywords": [
+    "interval",
+    "AVL",
+    "tree",
+    "data structure"
+  ],
+  "author": "Marko Žarković <marko@kastela.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/2Pacalypse-/node-interval-tree/issues"
+  },
+  "homepage": "https://github.com/2Pacalypse-/node-interval-tree",
+  "dependencies": {
+    "cuid": "^1.3.8"
+  },
+  "devDependencies": {
+    "babel": "^5.8.23",
+    "babel-core": "^5.8.25",
+    "mocha": "^2.3.3",
+    "chai": "^3.3.0"
+  }
+}
