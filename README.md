@@ -1,6 +1,10 @@
 # node-interval-tree
 An [Interval Tree](https://en.wikipedia.org/wiki/Interval_tree) data structure implemented as an augmented AVL Tree where each node maintains a list of records and their search intervals. Record is composed of an interval and its underlying data, sent by a client. This allows the interval tree to have the same interval inserted multiple times, as long as its data is different. Both insertion and deletion require `O(log n)` time. Searching requires `O(min(n, k * log n))` time, where `k` is the number of intervals in the output list.
 
+[![NPM](https://img.shields.io/npm/v/node-interval-tree.svg?style=flat)](https://www.npmjs.org/package/node-interval-tree)
+
+[![NPM](https://nodei.co/npm/node-interval-tree.png)](https://nodei.co/npm/node-interval-tree/)
+
 ## Usage
 #### `import IntervalTree from 'node-interval-tree'`
 #### `const intervalTree = new IntervalTree()`
