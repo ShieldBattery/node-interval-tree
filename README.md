@@ -49,3 +49,7 @@ intervalTree.insert(10, 15, 'baz') // -> true
 
 intervalTree.search(12, 20) // -> ['foo', 'baz']
 ```
+
+## License
+
+MIT
