@@ -26,6 +26,8 @@ for (let i = 1; i <= 100; i++) {
   intervalTree.insert(intervalLow, intervalHigh, cuid())
 }
 
+console.log('Number of the records in the tree: ' + intervalTree.count)
+
 const results = intervalTree.search(10, 15)
 if (!results || results.length === 0) {
   console.log('No overlapping intervals')

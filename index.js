@@ -457,6 +457,7 @@ class Node {
 export default class IntervalTree {
   constructor() {
     this.root = null
+    this.count = 0
   }
 
   insert(low, high, data) {
@@ -466,6 +467,7 @@ export default class IntervalTree {
     if (this.root === null) {
       // Base case: Tree is empty, new node becomes root
       this.root = new Node(this, record)
+      this.count++
       return true
     } else {
       // Otherwise, check if node already exists with the same key
@@ -490,10 +492,12 @@ export default class IntervalTree {
             node.parent.updateMaxOfParents()
           }
         }
+        this.count++
         return true
       } else {
         // Node with this key doesn't already exist. Call insert function on root's node
         this.root.insert(record)
+        this.count++
         return true
       }
     }
@@ -548,6 +552,7 @@ export default class IntervalTree {
               node.parent.updateMaxOfParents()
             }
           }
+          this.count--
           return true
         } else {
           return false
@@ -572,6 +577,7 @@ export default class IntervalTree {
             }
             if (removedNode) {
               removedNode = null
+              this.count--
               return true
             } else {
               return false
@@ -580,6 +586,7 @@ export default class IntervalTree {
             let removedNode = this.root.remove(node)
             if (removedNode) {
               removedNode = null
+              this.count--
               return true
             } else {
               return false
