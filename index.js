@@ -603,33 +603,29 @@ export default class IntervalTree {
     }
   }
 
-  preOrder(currentNode) {
+  * preOrder(currentNode) {
     if (currentNode === null) {
       return
     }
 
     for (let i = 0; i < currentNode.records.length; i++) {
-      console.log('[' + currentNode.key + ', ' + currentNode.records[i].interval.high +
-          '] max =', currentNode.max, 'height =', currentNode.height,
-          'count =', currentNode.records.length)
+      yield currentNode.records[i].data
     }
-    this.preOrder(currentNode.left)
-    this.preOrder(currentNode.right)
+    yield* this.preOrder(currentNode.left)
+    yield* this.preOrder(currentNode.right)
   }
 
-  inOrder(currentNode) {
+  * inOrder(currentNode) {
     if (currentNode === null) {
       return
     }
 
-    this.inOrder(currentNode.left)
+    yield* this.inOrder(currentNode.left)
 
-    for (let i = 0; i < currentNode.data.length; i++) {
-      console.log('[' + currentNode.key + ', ' + currentNode.records[i].interval.high +
-          '] max =', currentNode.max, 'height =', currentNode.height,
-          'count =', currentNode.records.length)
+    for (let i = 0; i < currentNode.records.length; i++) {
+      yield currentNode.records[i].data
     }
 
-    this.inOrder(currentNode.right)
+    yield* this.inOrder(currentNode.right)
   }
 }
