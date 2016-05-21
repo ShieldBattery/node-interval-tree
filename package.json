@@ -4,6 +4,11 @@
   "description": "Implementation of interval tree data structure.",
   "main": "index.js",
   "scripts": {
+    "autotest": "mocha --watch -R spec --compilers js:babel/register --recursive test/",
+    "build": "babel index.js --out-dir lib/",
+    "clean": "rimraf lib",
+    "lint": "eslint --ext .js ./",
+    "prepublish": "npm run lint && npm run test && npm run clean && npm run build",
     "test": "mocha -R spec --compilers js:babel/register --recursive test/"
   },
   "repository": {
@@ -30,7 +35,11 @@
   "devDependencies": {
     "babel": "^5.8.23",
     "babel-core": "^5.8.25",
+    "babel-eslint": "^4.1.3",
+    "chai": "^3.3.0",
+    "eslint": "^1.6.0",
+    "eslint-plugin-babel": "^2.1.1",
     "mocha": "^2.3.3",
-    "chai": "^3.3.0"
+    "rimraf": "^2.5.2"
   }
 }
