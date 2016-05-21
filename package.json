@@ -2,7 +2,7 @@
   "name": "node-interval-tree",
   "version": "0.2.0",
   "description": "Implementation of interval tree data structure.",
-  "main": "index.js",
+  "main": "lib/index.js",
   "scripts": {
     "autotest": "mocha --watch -R spec --compilers js:babel/register --recursive test/",
     "build": "babel index.js --out-dir lib/",
