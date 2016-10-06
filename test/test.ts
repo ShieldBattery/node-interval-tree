@@ -1,16 +1,16 @@
 import { expect } from 'chai'
-import IntervalTree from '../index'
-import cuid from 'cuid'
+import IntervalTree, { Node } from '../index'
+import cuid = require('cuid')
 
 const randomTree = new IntervalTree()
 
-function getRandomInt(min, max) {
+function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 
 for (let i = 1; i <= 100; i++) {
   let intervalLow = getRandomInt(0, 100)
-    , intervalHigh = getRandomInt(0, 100)
+  let intervalHigh = getRandomInt(0, 100)
 
   if (intervalHigh < intervalLow) {
     const temp = intervalHigh
@@ -21,8 +21,8 @@ for (let i = 1; i <= 100; i++) {
   randomTree.insert(intervalLow, intervalHigh, cuid())
 }
 
-function treeToArray(currentNode, treeArray) {
-  if (currentNode === null) {
+function treeToArray(currentNode: Node | undefined, treeArray: Node[]) {
+  if (currentNode === undefined) {
     return
   }
 
@@ -33,8 +33,8 @@ function treeToArray(currentNode, treeArray) {
   treeToArray(currentNode.right, treeArray)
 }
 
-function isSorted(tree) {
-  const treeArray = []
+function isSorted(tree: IntervalTree) {
+  const treeArray: Node[] = []
   treeToArray(tree.root, treeArray)
 
   for (let i = 0; i < treeArray.length - 1; i++) {
@@ -46,8 +46,8 @@ function isSorted(tree) {
   return true
 }
 
-function highestMaxValue(tree) {
-  const treeArray = []
+function highestMaxValue(tree: IntervalTree): Node {
+  const treeArray: Node[] = []
   treeToArray(tree.root, treeArray)
 
   let highest = treeArray[0]
@@ -113,9 +113,7 @@ describe('Interval tree', () => {
   it('should return an empty array when searching an empty tree', () => {
     const tree = new IntervalTree()
 
-    const searchData = (75, 150)
-
-    const searchResult = tree.search(searchData)
+    const searchResult = tree.search(75, 150)
     expect(searchResult.length).to.eql(0)
   })
 
@@ -133,7 +131,7 @@ describe('Interval tree', () => {
 
     const isRemoved = tree.remove(75, 150, 'data')
     expect(isRemoved).to.eql(true)
-    expect(tree.root).to.eql(null)
+    expect(tree.root).to.eql(undefined)
   })
 
   it('should correctly delete the data object on a node with multiple data objects', () => {
@@ -176,6 +174,6 @@ describe('Interval tree', () => {
 
   it('should have highest `max` value in root node', () => {
     const highest = highestMaxValue(randomTree)
-    expect(randomTree.root.max).to.eql(highest.max)
+    expect((randomTree.root as Node).max).to.eql(highest.max)
   })
 })
