@@ -1,5 +1,5 @@
 import IntervalTree from './index'
-import cuid from 'cuid'
+import  cuid = require('cuid')
 
 const intervalTree = new IntervalTree()
 
@@ -9,7 +9,7 @@ search - intervalTree.search(low, high) => [ data, data, data, ... ], empty arra
 remove - intervalTree.remove(low, high, data) => true if success, false if nothing removed
 */
 
-function getRandomInt(min, max) {
+function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min
 }
 

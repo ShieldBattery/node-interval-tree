@@ -4,12 +4,13 @@
   "description": "Implementation of interval tree data structure.",
   "main": "lib/index.js",
   "scripts": {
-    "autotest": "mocha --watch -R spec --compilers js:babel/register --recursive test/",
-    "build": "babel index.js --out-dir lib/",
+    "autotest": "mocha --watch -R spec --compilers ts:ts-node/register test/*.ts",
+    "build": "tsc",
     "clean": "rimraf lib",
-    "lint": "eslint --ext .js ./",
-    "prepublish": "npm run lint && npm run test && npm run clean && npm run build",
-    "test": "mocha -R spec --compilers js:babel/register --recursive test/"
+    "lint": "tslint '**/*.ts'",
+    "prepublish": "npm run lint  && npm run clean && npm run test && npm run build",
+    "test": "mocha -R spec --compilers ts:ts-node/register test/*.ts",
+    "postinstall": "typings install"
   },
   "repository": {
     "type": "git",
@@ -29,17 +30,20 @@
   "homepage": "https://github.com/2Pacalypse-/node-interval-tree",
   "dependencies": {
     "cuid": "^1.3.8",
-    "immutable": "3.8.1",
     "immutable-is": "^3.7.6"
   },
+  "files": [
+    "lib/index.js",
+    "lib/index.d.ts",
+    "typings.json"
+  ],
+  "typings": "./lib/index.d.ts",
   "devDependencies": {
-    "babel": "^5.8.23",
-    "babel-core": "^5.8.25",
-    "babel-eslint": "^4.1.3",
     "chai": "^3.3.0",
-    "eslint": "^1.6.0",
-    "eslint-plugin-babel": "^2.1.1",
     "mocha": "^2.3.3",
-    "rimraf": "^2.5.2"
+    "rimraf": "^2.5.2",
+    "ts-node": "^1.3.0",
+    "tslint": "^3.14.0",
+    "typescript": "^2.0.0"
   }
 }

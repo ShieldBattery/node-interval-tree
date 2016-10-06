@@ -54,6 +54,11 @@ intervalTree.insert(10, 15, 'baz') // -> true
 intervalTree.search(12, 20) // -> ['foo', 'baz']
 ```
 
+## Typescript users
+Types are included in the package but the exposed types rely on some global modules that can't be included automatically.
+The exposed types are IterableIterator, IteratorResult, and Symbol.iterator which can all be found in core-js.
+If you don't already have types for core-js (or an equivalent), please run `typings install --global dt~core-js`
+
 ## License
 
 MIT

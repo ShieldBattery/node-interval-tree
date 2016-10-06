@@ -4,57 +4,54 @@
 // Both insertion and deletion require O(log n) time. Searching requires O(k*logn) time, where `k`
 // is the number of intervals in the output list.
 
-import is from 'immutable-is'
+import isSame = require('immutable-is')
 
-class Interval {
-  constructor(low, high) {
-    if (typeof parseInt(low, 10) !== 'number' || typeof parseInt(high, 10) !== 'number') {
-      throw new Error('`low` and `high` values must be a number')
-    }
+export class Interval {
+  constructor(public low: number, public high: number) {
     if (low > high) {
       throw new Error('`low` value must be lower or equal to `high` value')
     }
-    this.low = low
-    this.high = high
   }
 }
 
-class Record {
-  constructor(interval, data) {
-    this.interval = interval
-    this.data = data
+export class Record {
+  constructor(public interval: Interval, public data: any) {
   }
 }
 
-function height(node) {
-  if (node === null) {
+function height(node?: Node) {
+  if (node === undefined) {
     return -1
   } else {
     return node.height
   }
 }
 
-class Node {
-  constructor(intervalTree, record) {
-    this.intervalTree = intervalTree
+export class Node {
+  public key: number
+  public max: number
+  public records: Record[] = []
+  public parent?: Node
+  public height = 0
+  public left?: Node
+  public right?: Node
+
+  public static overlappingRecords: any[]
+
+
+  constructor(public intervalTree: IntervalTree, record: Record) {
     this.key = record.interval.low
     this.max = record.interval.high
 
     // Save the array of all records with the same key for this node
-    this.records = []
     this.records.push(record)
-
-    this.parent = null
-    this.height = 0
-    this.left = null
-    this.right = null
 
     // Save the results of search in a static variable
     Node.overlappingRecords = []
   }
 
   // Gets the highest record.interval.high value for this node
-  getNodeHigh() {
+  public getNodeHigh() {
     let high = this.records[0].interval.high
 
     for (let i = 1; i < this.records.length; i++) {
@@ -67,24 +64,24 @@ class Node {
   }
 
   // Updates height value of the node. Called during insertion, rebalance, removal
-  updateHeight() {
+  public updateHeight() {
     this.height = Math.max(height(this.left), height(this.right)) + 1
   }
 
   // Updates the max value of all the parents after inserting into already existing node, as well as
   // removing the node completely or removing the record of an already existing node. Starts with
   // the parent of an affected node and bubbles up to root
-  updateMaxOfParents() {
-    if (this === null) {
+  public updateMaxOfParents() {
+    if (this === undefined) {
       return
     }
 
     const thisHigh = this.getNodeHigh()
-    if (this.left !== null && this.right !== null) {
+    if (this.left !== undefined && this.right !== undefined) {
       this.max = Math.max(Math.max(this.left.max, this.right.max), thisHigh)
-    } else if (this.left !== null && this.right === null) {
+    } else if (this.left !== undefined && this.right === undefined) {
       this.max = Math.max(this.left.max, thisHigh)
-    } else if (this.left === null && this.right !== null) {
+    } else if (this.left === undefined && this.right !== undefined) {
       this.max = Math.max(this.right.max, thisHigh)
     } else {
       this.max = thisHigh
@@ -119,35 +116,37 @@ class Node {
   */
 
   // Handles Left-Left case and Left-Right case after rebalancing AVL tree
-  _updateMaxAfterRightRotate() {
+  private _updateMaxAfterRightRotate() {
+    const parent = this.parent as Node
+    const left = parent.left as Node
     // Update max of left sibling (x in first case, y in second)
-    const thisParentLeftHigh = this.parent.left.getNodeHigh()
-    if (this.parent.left.left === null && this.parent.left.right !== null) {
-      this.parent.left.max = Math.max(thisParentLeftHigh, this.parent.left.right.max)
-    } else if (this.parent.left.left !== null && this.parent.left.right === null) {
-      this.parent.left.max = Math.max(thisParentLeftHigh, this.parent.left.left.max)
-    } else if (this.parent.left.left === null && this.parent.left.right === null) {
-      this.parent.left.max = thisParentLeftHigh
+    const thisParentLeftHigh = left.getNodeHigh()
+    if (left.left === undefined && left.right !== undefined) {
+      left.max = Math.max(thisParentLeftHigh, left.right.max)
+    } else if (left.left !== undefined && left.right === undefined) {
+      left.max = Math.max(thisParentLeftHigh, left.left.max)
+    } else if (left.left === undefined && left.right === undefined) {
+      left.max = thisParentLeftHigh
     } else {
-      this.parent.left.max = Math.max(Math.max(this.parent.left.left.max,
-          this.parent.left.right.max), thisParentLeftHigh)
+      left.max = Math.max(Math.max((left.left as Node).max,
+          (left.right as Node).max), thisParentLeftHigh)
     }
 
     // Update max of itself (z)
     const thisHigh = this.getNodeHigh()
-    if (this.left === null && this.right !== null) {
+    if (this.left === undefined && this.right !== undefined) {
       this.max = Math.max(thisHigh, this.right.max)
-    } else if (this.left !== null && this.right === null) {
+    } else if (this.left !== undefined && this.right === undefined) {
       this.max = Math.max(thisHigh, this.left.max)
-    } else if (this.left === null && this.right === null) {
+    } else if (this.left === undefined && this.right === undefined) {
       this.max = thisHigh
     } else {
-      this.max = Math.max(Math.max(this.left.max, this.right.max), thisHigh)
+      this.max = Math.max(Math.max((this.left as Node).max, (this.right as Node).max), thisHigh)
     }
 
     // Update max of parent (y in first case, x in second)
-    this.parent.max = Math.max(Math.max(this.parent.left.max, this.parent.right.max),
-        this.parent.getNodeHigh())
+    parent.max = Math.max(Math.max((parent.left as Node).max, (parent.right as Node).max),
+        parent.getNodeHigh())
   }
 
   /*
@@ -173,53 +172,55 @@ class Node {
   */
 
   // Handles Right-Right case and Right-Left case in rebalancing AVL tree
-  _updateMaxAfterLeftRotate() {
+  private _updateMaxAfterLeftRotate() {
+    const parent = this.parent as Node
+    const right = parent.right as Node
     // Update max of right sibling (x in first case, y in second)
-    const thisParentRightHigh = this.parent.right.getNodeHigh()
-    if (this.parent.right.left === null && this.parent.right.right !== null) {
-      this.parent.right.max = Math.max(thisParentRightHigh, this.parent.right.right.max)
-    } else if (this.parent.right.left !== null && this.parent.right.right === null) {
-      this.parent.right.max = Math.max(thisParentRightHigh, this.parent.right.left.max)
-    } else if (this.parent.right.left === null && this.parent.right.right === null) {
-      this.parent.right.max = thisParentRightHigh
+    const thisParentRightHigh = right.getNodeHigh()
+    if (right.left === undefined && right.right !== undefined) {
+      right.max = Math.max(thisParentRightHigh, (right.right as Node).max)
+    } else if (right.left !== undefined && right.right === undefined) {
+      right.max = Math.max(thisParentRightHigh, (right.left as Node).max)
+    } else if (right.left === undefined && right.right === undefined) {
+      right.max = thisParentRightHigh
     } else {
-      this.parent.right.max = Math.max(Math.max(this.parent.right.left.max,
-          this.parent.right.right.max), thisParentRightHigh)
+      right.max = Math.max(Math.max((right.left as Node).max,
+          (right.right as Node).max), thisParentRightHigh)
     }
 
     // Update max of itself (z)
     const thisHigh = this.getNodeHigh()
-    if (this.left === null && this.right !== null) {
-      this.max = Math.max(thisHigh, this.right.max)
-    } else if (this.left !== null && this.right === null) {
-      this.max = Math.max(thisHigh, this.left.max)
-    } else if (this.left === null && this.right === null) {
+    if (this.left === undefined && this.right !== undefined) {
+      this.max = Math.max(thisHigh, (this.right as Node).max)
+    } else if (this.left !== undefined && this.right === undefined) {
+      this.max = Math.max(thisHigh, (this.left as Node).max)
+    } else if (this.left === undefined && this.right === undefined) {
       this.max = thisHigh
     } else {
-      this.max = Math.max(Math.max(this.left.max, this.right.max), thisHigh)
+      this.max = Math.max(Math.max((this.left as Node).max, (this.right as Node).max), thisHigh)
     }
 
     // Update max of parent (y in first case, x in second)
-    this.parent.max = Math.max(Math.max(this.parent.left.max, this.parent.right.max),
-        this.parent.getNodeHigh())
+    parent.max = Math.max(Math.max((parent.left as Node).max, right.max),
+        parent.getNodeHigh())
   }
 
-  _leftRotate() {
-    const rightChild = this.right
+  private _leftRotate() {
+    const rightChild = this.right as Node
     rightChild.parent = this.parent
 
-    if (rightChild.parent === null) {
+    if (rightChild.parent === undefined) {
       this.intervalTree.root = rightChild
     } else {
-      if (rightChild.parent.left === this) {
-        rightChild.parent.left = rightChild
-      } else if (rightChild.parent.right === this) {
-        rightChild.parent.right = rightChild
+      if ((rightChild.parent as Node).left === this) {
+        (rightChild.parent as Node).left = rightChild
+      } else if ((rightChild.parent as Node).right === this) {
+        (rightChild.parent as Node).right = rightChild
       }
     }
 
     this.right = rightChild.left
-    if (this.right !== null) {
+    if (this.right !== undefined) {
       this.right.parent = this
     }
     rightChild.left = this
@@ -228,11 +229,11 @@ class Node {
     rightChild.updateHeight()
   }
 
-  _rightRotate() {
-    const leftChild = this.left
+  private _rightRotate() {
+    const leftChild = this.left as Node
     leftChild.parent = this.parent
 
-    if (leftChild.parent === null) {
+    if (leftChild.parent === undefined) {
       this.intervalTree.root = leftChild
     } else {
       if (leftChild.parent.left === this) {
@@ -243,7 +244,7 @@ class Node {
     }
 
     this.left = leftChild.right
-    if (this.left !== null) {
+    if (this.left !== undefined) {
       this.left.parent = this
     }
     leftChild.right = this
@@ -252,38 +253,40 @@ class Node {
     leftChild.updateHeight()
   }
 
-  // Rebalances the tree if the height value between two nodes of the same parent is greater than
+   // Rebalances the tree if the height value between two nodes of the same parent is greater than
   // two. There are 4 cases that can happen which are outlined in the graphics above
-  _rebalance() {
+  private _rebalance() {
     if (height(this.left) >= 2 + height(this.right)) {
-      if (height(this.left.left) >= height(this.left.right)) {
+      const left = this.left as Node
+      if (height(left.left) >= height(left.right)) {
         // Left-Left case
         this._rightRotate()
         this._updateMaxAfterRightRotate()
       } else {
         // Left-Right case
-        this.left._leftRotate()
+        left._leftRotate()
         this._rightRotate()
         this._updateMaxAfterRightRotate()
       }
     } else if (height(this.right) >= 2 + height(this.left)) {
-      if (height(this.right.right) >= height(this.right.left)) {
+      const right = this.right as Node
+      if (height(right.right) >= height(right.left)) {
         // Right-Right case
         this._leftRotate()
         this._updateMaxAfterLeftRotate()
       } else {
         // Right-Left case
-        this.right._rightRotate()
+        right._rightRotate()
         this._leftRotate()
         this._updateMaxAfterLeftRotate()
       }
     }
   }
 
-  insert(record) {
+  public insert(record: Record) {
     if (record.interval.low < this.key) {
       // Insert into left subtree
-      if (this.left === null) {
+      if (this.left === undefined) {
         this.left = new Node(this.intervalTree, record)
         this.left.parent = this
       } else {
@@ -291,7 +294,7 @@ class Node {
       }
     } else {
       // Insert into right subtree
-      if (this.right === null) {
+      if (this.right === undefined) {
         this.right = new Node(this.intervalTree, record)
         this.right.parent = this
       } else {
@@ -312,10 +315,11 @@ class Node {
     this._rebalance()
   }
 
-  _getOverlappingRecords(currentNode, low, high) {
+
+  private _getOverlappingRecords(currentNode: Node, low: number, high: number) {
     if (currentNode.key <= high && low <= currentNode.getNodeHigh()) {
       // Nodes are overlapping, check if individual records in the node are overlapping
-      const tempResults = []
+      const tempResults: any[] = []
       for (let i = 0; i < currentNode.records.length; i++) {
         if (currentNode.records[i].interval.high >= low) {
           tempResults.push(currentNode.records[i].data)
@@ -323,12 +327,12 @@ class Node {
       }
       return tempResults
     }
-    return null
+    return undefined
   }
 
-  search(low, high) {
+  public search(low: number, high: number) {
     // Don't search nodes that don't exist
-    if (this === null) {
+    if (this === undefined) {
       return Node.overlappingRecords
     }
 
@@ -339,13 +343,13 @@ class Node {
     }
 
     // Search left children
-    if (this.left !== null && this.left.max >= low) {
+    if (this.left !== undefined && this.left.max >= low) {
       this.left.search(low, high)
     }
 
     // Check this node
     const tempResults = this._getOverlappingRecords(this, low, high)
-    if (tempResults !== null) {
+    if (tempResults !== undefined) {
       // Add overlapping records from this node to already existing, if any, overlapping records
       for (let i = 0; i < tempResults.length; i++) {
         Node.overlappingRecords.push(tempResults[i])
@@ -359,7 +363,7 @@ class Node {
     }
 
     // Otherwise, search right children
-    if (this.right !== null) {
+    if (this.right !== undefined) {
       this.right.search(low, high)
     }
 
@@ -368,86 +372,88 @@ class Node {
   }
 
   // Searches for a node by a `key` value
-  searchExisting(low) {
-    if (this === null) {
-      return null
+  public searchExisting(low: number): Node | undefined {
+    if (this === undefined) {
+      return undefined
     }
 
     if (this.key === low) {
       return this
     } else if (low < this.key) {
-      if (this.left !== null) {
+      if (this.left !== undefined) {
         return this.left.searchExisting(low)
       }
     } else {
-      if (this.right !== null) {
+      if (this.right !== undefined) {
         return this.right.searchExisting(low)
       }
     }
 
-    return null
+    return undefined
   }
 
   // Returns the smallest node of the subtree
-  _minValue() {
-    if (this.left === null) {
+  private _minValue(): Node {
+    if (this.left === undefined) {
       return this
     } else {
       return this.left._minValue()
     }
   }
 
-  remove(node) {
+  public remove(node: Node): Node | undefined {
+    const parent = this.parent as Node
+
     if (node.key < this.key) {
       // Node to be removed is on the left side
-      if (this.left !== null) {
+      if (this.left !== undefined) {
         return this.left.remove(node)
       } else {
-        return null
+        return undefined
       }
     } else if (node.key > this.key) {
       // Node to be removed is on the right side
-      if (this.right !== null) {
+      if (this.right !== undefined) {
         return this.right.remove(node)
       } else {
-        return null
+        return undefined
       }
     } else {
-      if (this.left !== null && this.right !== null) {
+      if (this.left !== undefined && this.right !== undefined) {
         // Node has two children
         const minValue = this.right._minValue()
         this.key = minValue.key
         this.records = minValue.records
         return this.right.remove(this)
-      } else if (this.parent.left === this) {
+      } else if (parent.left === this) {
         // One child or no child case on left side
-        if (this.right !== null) {
-          this.parent.left = this.right
-          this.right.parent = this.parent
+        if (this.right !== undefined) {
+          parent.left = this.right
+          this.right.parent = parent
         } else {
-          this.parent.left = this.left
-          if (this.parent.left !== null) {
-            this.left.parent = this.parent
+          parent.left = this.left
+          if (this.left !== undefined) {
+            this.left.parent = parent
           }
         }
-        this.parent.updateMaxOfParents()
-        this.parent.updateHeight()
-        this.parent._rebalance()
+        parent.updateMaxOfParents()
+        parent.updateHeight()
+        parent._rebalance()
         return this
-      } else if (this.parent.right === this) {
+      } else if (parent.right === this) {
         // One child or no child case on right side
-        if (this.right !== null) {
-          this.parent.right = this.right
-          this.right.parent = this.parent
+        if (this.right !== undefined) {
+          parent.right = this.right
+          this.right.parent = parent
         } else {
-          this.parent.right = this.left
-          if (this.parent.right !== null) {
-            this.left.parent = this.parent
+          parent.right = this.left
+          if (this.left !== undefined) {
+            this.left.parent = parent
           }
         }
-        this.parent.updateMaxOfParents()
-        this.parent.updateHeight()
-        this.parent._rebalance()
+        parent.updateMaxOfParents()
+        parent.updateHeight()
+        parent._rebalance()
         return this
       }
     }
@@ -455,16 +461,14 @@ class Node {
 }
 
 export default class IntervalTree {
-  constructor() {
-    this.root = null
-    this.count = 0
-  }
+  public root?: Node
+  public count = 0
 
-  insert(low, high, data) {
+  public insert(low: number, high: number, data?: any) {
     const interval = new Interval(low, high)
     const record = new Record(interval, data)
 
-    if (this.root === null) {
+    if (this.root === undefined) {
       // Base case: Tree is empty, new node becomes root
       this.root = new Node(this, record)
       this.count++
@@ -472,10 +476,10 @@ export default class IntervalTree {
     } else {
       // Otherwise, check if node already exists with the same key
       const node = this.root.searchExisting(low)
-      if (node !== null) {
+      if (node !== undefined) {
         // Check the records in this node if there already is the one with same low, high, data
         for (let i = 0; i < node.records.length; i++) {
-          if (node.records[i].interval.high === high && is(node.records[i].data, data)) {
+          if (node.records[i].interval.high === high && isSame(node.records[i].data, data)) {
             // This record is same as the one we're trying to insert; return false to indicate
             // nothing has been inserted
             return false
@@ -503,8 +507,8 @@ export default class IntervalTree {
     }
   }
 
-  search(low, high) {
-    if (this.root === null) {
+  public search(low: number, high: number) {
+    if (this.root === undefined) {
       // Tree is empty; return empty array
       return []
     } else {
@@ -515,19 +519,19 @@ export default class IntervalTree {
     }
   }
 
-  remove(low, high, data) {
-    if (this.root === null) {
+  public remove(low: number, high: number, data?: any) {
+    if (this.root === undefined) {
       // Tree is empty; nothing to remove
       return false
     } else {
       const node = this.root.searchExisting(low)
-      if (node === null) {
+      if (node === undefined) {
         return false
       } else if (node.records.length > 1) {
-        let removedRecord
+        let removedRecord: Record | undefined
         // Node with this key has 2 or more records. Find the one we need and remove it
         for (let i = 0; i < node.records.length; i++) {
-          if (node.records[i].interval.high === high && is(node.records[i].data, data)) {
+          if (node.records[i].interval.high === high && isSame(node.records[i].data, data)) {
             removedRecord = node.records[i]
             node.records.splice(i, 1)
             break
@@ -535,15 +539,15 @@ export default class IntervalTree {
         }
 
         if (removedRecord) {
-          removedRecord = null
+          removedRecord = undefined
           // Update max of that node and its parents if necessary
           if (high === node.max) {
             const nodeHigh = node.getNodeHigh()
-            if (node.left !== null && node.right !== null) {
+            if (node.left !== undefined && node.right !== undefined) {
               node.max = Math.max(Math.max(node.left.max, node.right.max), nodeHigh)
-            } else if (node.left !== null && node.right === null) {
+            } else if (node.left !== undefined && node.right === undefined) {
               node.max = Math.max(node.left.max, nodeHigh)
-            } else if (node.left === null && node.right !== null) {
+            } else if (node.left === undefined && node.right !== undefined) {
               node.max = Math.max(node.right.max, nodeHigh)
             } else {
               node.max = nodeHigh
@@ -560,7 +564,7 @@ export default class IntervalTree {
       } else if (node.records.length === 1) {
         // Node with this key has only 1 record. Check if the remaining record in this node is
         // actually the one we want to remove
-        if (node.records[0].interval.high === high && is(node.records[0].data, data)) {
+        if (node.records[0].interval.high === high && isSame(node.records[0].data, data)) {
           // The remaining record is the one we want to remove. Remove the whole node from the tree
           if (this.root.key === node.key) {
             // We're removing the root element. Create a dummy node that will temporarily take
@@ -572,11 +576,11 @@ export default class IntervalTree {
             this.root.parent = rootParent
             let removedNode = this.root.remove(node)
             this.root = rootParent.left
-            if (this.root !== null) {
-              this.root.parent = null
+            if (this.root !== undefined) {
+              this.root.parent = undefined
             }
             if (removedNode) {
-              removedNode = null
+              removedNode = undefined
               this.count--
               return true
             } else {
@@ -585,7 +589,7 @@ export default class IntervalTree {
           } else {
             let removedNode = this.root.remove(node)
             if (removedNode) {
-              removedNode = null
+              removedNode = undefined
               this.count--
               return true
             } else {
@@ -603,8 +607,8 @@ export default class IntervalTree {
     }
   }
 
-  * preOrder(currentNode) {
-    if (currentNode === null) {
+  public * preOrder(currentNode?: Node): Iterable<Node> {
+    if (currentNode === undefined) {
       return
     }
 
@@ -615,8 +619,8 @@ export default class IntervalTree {
     yield* this.preOrder(currentNode.right)
   }
 
-  * inOrder(currentNode) {
-    if (currentNode === null) {
+  public * inOrder(currentNode?: Node): Iterable<Node> {
+    if (currentNode === undefined) {
       return
     }
 
