@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import IntervalTree, { Node } from '../index'
 import cuid = require('cuid')
 
-const randomTree = new IntervalTree()
+const randomTree = new IntervalTree<string>()
 
 function getRandomInt(min: number, max: number) {
   return Math.floor(Math.random() * (max - min + 1)) + min
@@ -21,7 +21,7 @@ for (let i = 1; i <= 100; i++) {
   randomTree.insert(intervalLow, intervalHigh, cuid())
 }
 
-function treeToArray(currentNode: Node | undefined, treeArray: Node[]) {
+function treeToArray<T>(currentNode: Node<T> | undefined, treeArray: Node<T>[]) {
   if (currentNode === undefined) {
     return
   }
@@ -33,8 +33,18 @@ function treeToArray(currentNode: Node | undefined, treeArray: Node[]) {
   treeToArray(currentNode.right, treeArray)
 }
 
-function isSorted(tree: IntervalTree) {
-  const treeArray: Node[] = []
+function iteratorToArray<T>(it: Iterator<T>) {
+  const acc: T[] = []
+  let last = it.next()
+  while (!last.done) {
+    acc.push(last.value as T)
+    last = it.next()
+  }
+  return acc
+}
+
+function isSorted<T>(tree: IntervalTree<T>) {
+  const treeArray: Node<T>[] = []
   treeToArray(tree.root, treeArray)
 
   for (let i = 0; i < treeArray.length - 1; i++) {
@@ -46,8 +56,8 @@ function isSorted(tree: IntervalTree) {
   return true
 }
 
-function highestMaxValue(tree: IntervalTree): Node {
-  const treeArray: Node[] = []
+function highestMaxValue<T>(tree: IntervalTree<T>): Node<T> {
+  const treeArray: Node<T>[] = []
   treeToArray(tree.root, treeArray)
 
   let highest = treeArray[0]
@@ -62,7 +72,7 @@ function highestMaxValue(tree: IntervalTree): Node {
 
 describe('Interval tree', () => {
   it('should correctly insert into an empty tree', () => {
-    const tree = new IntervalTree()
+    const tree = new IntervalTree<string>()
 
     tree.insert(50, 100, 'data')
 
@@ -71,7 +81,7 @@ describe('Interval tree', () => {
   })
 
   it('should correctly insert into a node with the same key', () => {
-    const tree = new IntervalTree()
+    const tree = new IntervalTree<string>()
 
     tree.insert(50, 150, 'data1')
     tree.insert(50, 100, 'data2')
@@ -174,6 +184,46 @@ describe('Interval tree', () => {
 
   it('should have highest `max` value in root node', () => {
     const highest = highestMaxValue(randomTree)
-    expect((randomTree.root as Node).max).to.eql(highest.max)
+    expect((randomTree.root as Node<string>).max).to.eql(highest.max)
+  })
+
+  describe('InOrder', () => {
+    it('should traverse in order', () => {
+      const tree = new IntervalTree<string>()
+
+      const values: [number, number, string][] = [
+        [50, 150, 'data1'],
+        [75, 100, 'data2'],
+        [40, 100, 'data3'],
+        [60, 150, 'data4'],
+        [80, 90, 'data5'],
+      ]
+
+      values.forEach((v) => tree.insert.apply(tree, v))
+
+      const order = ['data3', 'data1', 'data4', 'data2', 'data5']
+      const data = iteratorToArray(tree.inOrder()).map(v => v.data)
+      expect(data).to.eql(order)
+    })
+  })
+
+  describe('PreOrder', () => {
+    it('should traverse pre order', () => {
+      const tree = new IntervalTree<string>()
+
+      const values: [number, number, string][] = [
+        [50, 150, 'data1'],
+        [75, 100, 'data2'],
+        [40, 100, 'data3'],
+        [60, 150, 'data4'],
+        [80, 90, 'data5'],
+      ]
+
+      values.forEach((v) => tree.insert.apply(tree, v))
+
+      const order = ['data1', 'data3', 'data2', 'data4', 'data5']
+      const data = iteratorToArray(tree.preOrder()).map(v => v.data)
+      expect(data).to.eql(order)
+    })
   })
 })

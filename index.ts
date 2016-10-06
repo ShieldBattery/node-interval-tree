@@ -5,6 +5,7 @@
 // is the number of intervals in the output list.
 
 import isSame = require('immutable-is')
+import 'core-js/es6/symbol'
 
 export class Interval {
   constructor(public low: number, public high: number) {
@@ -14,12 +15,12 @@ export class Interval {
   }
 }
 
-export class Record {
-  constructor(public interval: Interval, public data: any) {
+export class Record<T> {
+  constructor(public interval: Interval, public data: T) {
   }
 }
 
-function height(node?: Node) {
+function height<T>(node?: Node<T>) {
   if (node === undefined) {
     return -1
   } else {
@@ -27,19 +28,19 @@ function height(node?: Node) {
   }
 }
 
-export class Node {
+export class Node<T> {
   public key: number
   public max: number
-  public records: Record[] = []
-  public parent?: Node
+  public records: Record<T>[] = []
+  public parent?: Node<T>
   public height = 0
-  public left?: Node
-  public right?: Node
+  public left?: Node<T>
+  public right?: Node<T>
 
   public static overlappingRecords: any[]
 
 
-  constructor(public intervalTree: IntervalTree, record: Record) {
+  constructor(public intervalTree: IntervalTree<T>, record: Record<T>) {
     this.key = record.interval.low
     this.max = record.interval.high
 
@@ -117,8 +118,8 @@ export class Node {
 
   // Handles Left-Left case and Left-Right case after rebalancing AVL tree
   private _updateMaxAfterRightRotate() {
-    const parent = this.parent as Node
-    const left = parent.left as Node
+    const parent = this.parent as Node<T>
+    const left = parent.left as Node<T>
     // Update max of left sibling (x in first case, y in second)
     const thisParentLeftHigh = left.getNodeHigh()
     if (left.left === undefined && left.right !== undefined) {
@@ -128,8 +129,8 @@ export class Node {
     } else if (left.left === undefined && left.right === undefined) {
       left.max = thisParentLeftHigh
     } else {
-      left.max = Math.max(Math.max((left.left as Node).max,
-          (left.right as Node).max), thisParentLeftHigh)
+      left.max = Math.max(Math.max((left.left as Node<T>).max,
+          (left.right as Node<T>).max), thisParentLeftHigh)
     }
 
     // Update max of itself (z)
@@ -141,11 +142,11 @@ export class Node {
     } else if (this.left === undefined && this.right === undefined) {
       this.max = thisHigh
     } else {
-      this.max = Math.max(Math.max((this.left as Node).max, (this.right as Node).max), thisHigh)
+      this.max = Math.max(Math.max((this.left as Node<T>).max, (this.right as Node<T>).max), thisHigh)
     }
 
     // Update max of parent (y in first case, x in second)
-    parent.max = Math.max(Math.max((parent.left as Node).max, (parent.right as Node).max),
+    parent.max = Math.max(Math.max((parent.left as Node<T>).max, (parent.right as Node<T>).max),
         parent.getNodeHigh())
   }
 
@@ -173,49 +174,49 @@ export class Node {
 
   // Handles Right-Right case and Right-Left case in rebalancing AVL tree
   private _updateMaxAfterLeftRotate() {
-    const parent = this.parent as Node
-    const right = parent.right as Node
+    const parent = this.parent as Node<T>
+    const right = parent.right as Node<T>
     // Update max of right sibling (x in first case, y in second)
     const thisParentRightHigh = right.getNodeHigh()
     if (right.left === undefined && right.right !== undefined) {
-      right.max = Math.max(thisParentRightHigh, (right.right as Node).max)
+      right.max = Math.max(thisParentRightHigh, (right.right as Node<T>).max)
     } else if (right.left !== undefined && right.right === undefined) {
-      right.max = Math.max(thisParentRightHigh, (right.left as Node).max)
+      right.max = Math.max(thisParentRightHigh, (right.left as Node<T>).max)
     } else if (right.left === undefined && right.right === undefined) {
       right.max = thisParentRightHigh
     } else {
-      right.max = Math.max(Math.max((right.left as Node).max,
-          (right.right as Node).max), thisParentRightHigh)
+      right.max = Math.max(Math.max((right.left as Node<T>).max,
+          (right.right as Node<T>).max), thisParentRightHigh)
     }
 
     // Update max of itself (z)
     const thisHigh = this.getNodeHigh()
     if (this.left === undefined && this.right !== undefined) {
-      this.max = Math.max(thisHigh, (this.right as Node).max)
+      this.max = Math.max(thisHigh, (this.right as Node<T>).max)
     } else if (this.left !== undefined && this.right === undefined) {
-      this.max = Math.max(thisHigh, (this.left as Node).max)
+      this.max = Math.max(thisHigh, (this.left as Node<T>).max)
     } else if (this.left === undefined && this.right === undefined) {
       this.max = thisHigh
     } else {
-      this.max = Math.max(Math.max((this.left as Node).max, (this.right as Node).max), thisHigh)
+      this.max = Math.max(Math.max((this.left as Node<T>).max, (this.right as Node<T>).max), thisHigh)
     }
 
     // Update max of parent (y in first case, x in second)
-    parent.max = Math.max(Math.max((parent.left as Node).max, right.max),
+    parent.max = Math.max(Math.max((parent.left as Node<T>).max, right.max),
         parent.getNodeHigh())
   }
 
   private _leftRotate() {
-    const rightChild = this.right as Node
+    const rightChild = this.right as Node<T>
     rightChild.parent = this.parent
 
     if (rightChild.parent === undefined) {
       this.intervalTree.root = rightChild
     } else {
-      if ((rightChild.parent as Node).left === this) {
-        (rightChild.parent as Node).left = rightChild
-      } else if ((rightChild.parent as Node).right === this) {
-        (rightChild.parent as Node).right = rightChild
+      if ((rightChild.parent as Node<T>).left === this) {
+        (rightChild.parent as Node<T>).left = rightChild
+      } else if ((rightChild.parent as Node<T>).right === this) {
+        (rightChild.parent as Node<T>).right = rightChild
       }
     }
 
@@ -230,7 +231,7 @@ export class Node {
   }
 
   private _rightRotate() {
-    const leftChild = this.left as Node
+    const leftChild = this.left as Node<T>
     leftChild.parent = this.parent
 
     if (leftChild.parent === undefined) {
@@ -257,7 +258,7 @@ export class Node {
   // two. There are 4 cases that can happen which are outlined in the graphics above
   private _rebalance() {
     if (height(this.left) >= 2 + height(this.right)) {
-      const left = this.left as Node
+      const left = this.left as Node<T>
       if (height(left.left) >= height(left.right)) {
         // Left-Left case
         this._rightRotate()
@@ -269,7 +270,7 @@ export class Node {
         this._updateMaxAfterRightRotate()
       }
     } else if (height(this.right) >= 2 + height(this.left)) {
-      const right = this.right as Node
+      const right = this.right as Node<T>
       if (height(right.right) >= height(right.left)) {
         // Right-Right case
         this._leftRotate()
@@ -283,7 +284,7 @@ export class Node {
     }
   }
 
-  public insert(record: Record) {
+  public insert(record: Record<T>) {
     if (record.interval.low < this.key) {
       // Insert into left subtree
       if (this.left === undefined) {
@@ -316,7 +317,7 @@ export class Node {
   }
 
 
-  private _getOverlappingRecords(currentNode: Node, low: number, high: number) {
+  private _getOverlappingRecords(currentNode: Node<T>, low: number, high: number) {
     if (currentNode.key <= high && low <= currentNode.getNodeHigh()) {
       // Nodes are overlapping, check if individual records in the node are overlapping
       const tempResults: any[] = []
@@ -372,7 +373,7 @@ export class Node {
   }
 
   // Searches for a node by a `key` value
-  public searchExisting(low: number): Node | undefined {
+  public searchExisting(low: number): Node<T> | undefined {
     if (this === undefined) {
       return undefined
     }
@@ -393,7 +394,7 @@ export class Node {
   }
 
   // Returns the smallest node of the subtree
-  private _minValue(): Node {
+  private _minValue(): Node<T> {
     if (this.left === undefined) {
       return this
     } else {
@@ -401,8 +402,8 @@ export class Node {
     }
   }
 
-  public remove(node: Node): Node | undefined {
-    const parent = this.parent as Node
+  public remove(node: Node<T>): Node<T> | undefined {
+    const parent = this.parent as Node<T>
 
     if (node.key < this.key) {
       // Node to be removed is on the left side
@@ -460,11 +461,11 @@ export class Node {
   }
 }
 
-export default class IntervalTree {
-  public root?: Node
+export default class IntervalTree<T> {
+  public root?: Node<T>
   public count = 0
 
-  public insert(low: number, high: number, data?: any) {
+  public insert(low: number, high: number, data: T) {
     const interval = new Interval(low, high)
     const record = new Record(interval, data)
 
@@ -528,7 +529,7 @@ export default class IntervalTree {
       if (node === undefined) {
         return false
       } else if (node.records.length > 1) {
-        let removedRecord: Record | undefined
+        let removedRecord: Record<T> | undefined
         // Node with this key has 2 or more records. Find the one we need and remove it
         for (let i = 0; i < node.records.length; i++) {
           if (node.records[i].interval.high === high && isSame(node.records[i].data, data)) {
@@ -607,29 +608,120 @@ export default class IntervalTree {
     }
   }
 
-  public * preOrder(currentNode?: Node): Iterable<Node> {
-    if (currentNode === undefined) {
-      return
-    }
-
-    for (let i = 0; i < currentNode.records.length; i++) {
-      yield currentNode.records[i].data
-    }
-    yield* this.preOrder(currentNode.left)
-    yield* this.preOrder(currentNode.right)
+  public inOrder() {
+    return new InOrder(this.root)
   }
 
-  public * inOrder(currentNode?: Node): Iterable<Node> {
-    if (currentNode === undefined) {
-      return
-    }
-
-    yield* this.inOrder(currentNode.left)
-
-    for (let i = 0; i < currentNode.records.length; i++) {
-      yield currentNode.records[i].data
-    }
-
-    yield* this.inOrder(currentNode.right)
+  public preOrder() {
+    return new PreOrder(this.root)
   }
 }
+
+export class InOrder<T> implements IterableIterator<Record<T>> {
+  private stack: Node<T>[] = []
+
+  private currentNode?: Node<T>
+  private i: number
+
+  constructor(startNode?: Node<T>) {
+    if (startNode !== undefined) {
+      this.push(startNode)
+    }
+  }
+
+  public next(): IteratorResult<Record<T>> {
+    // Will only happen if stack is empty and pop is called
+    if (this.currentNode === undefined) {
+      return {
+        done: true,
+      }
+    }
+
+    // Process this node
+    if (this.i < this.currentNode.records.length) {
+      return {
+        done: false,
+        value: this.currentNode.records[this.i++],
+      }
+    }
+
+    if (this.currentNode.right !== undefined) { // Can we go right?
+      this.push(this.currentNode.right)
+    } else { // Otherwise go up
+      // Might pop the last and set this.currentNode = undefined
+      this.pop()
+    }
+    return this.next()
+  }
+
+  public [Symbol.iterator](): IterableIterator<Record<T>> {
+    return this
+  }
+
+  private push(node: Node<T>) {
+    this.currentNode = node
+    this.i = 0
+
+    while(this.currentNode.left !== undefined) {
+      this.stack.push(this.currentNode)
+      this.currentNode = this.currentNode.left
+    }
+  }
+
+  private pop() {
+    this.currentNode = this.stack.pop()
+    this.i = 0
+  }
+}
+
+export class PreOrder<T> implements IterableIterator<Record<T>> {
+  private stack: Node<T>[] = []
+
+  private currentNode?: Node<T>
+  private i: number = 0
+
+  constructor(startNode?: Node<T>) {
+    this.currentNode = startNode
+  }
+
+  public next(): IteratorResult<Record<T>> {
+    // Will only happen if stack is empty and pop is called,
+    // which only happens if there is no right node (i.e we are done)
+    if (this.currentNode === undefined) {
+      return {
+        done: true,
+      }
+    }
+
+    // Process this node
+    if (this.i < this.currentNode.records.length) {
+      return {
+        done: false,
+        value: this.currentNode.records[this.i++],
+      }
+    }
+
+    if (this.currentNode.right !== undefined) {
+      this.push(this.currentNode.right)
+    }
+    if (this.currentNode.left !== undefined) {
+      this.push(this.currentNode.left)
+    }
+    this.pop()
+    return this.next()
+  }
+
+  public [Symbol.iterator](): IterableIterator<Record<T>> {
+    return this
+  }
+
+  private push(node: Node<T>) {
+    this.stack.push(node)
+  }
+
+  private pop() {
+    this.currentNode = this.stack.pop()
+    this.i = 0
+  }
+}
+
