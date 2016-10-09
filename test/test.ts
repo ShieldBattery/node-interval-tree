@@ -195,6 +195,15 @@ describe('Interval tree', () => {
     expect((randomTree.root as Node<StringInterval>).max).to.eql(highest.max)
   })
 
+  it('should reject intervals where low > high', () => {
+    const tree = new IntervalTree<Interval>()
+    const high = 10
+    const low = 15
+
+
+    expect(() => tree.insert({ low, high })).to.throw(Error)
+  })
+
   describe('InOrder', () => {
     it('should traverse in order', () => {
       const tree = new IntervalTree<StringInterval>()
