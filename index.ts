@@ -12,13 +12,6 @@ export interface Interval {
   readonly high: number
 }
 
-/*
-if (low > high) {
-      throw new Error('`low` value must be lower or equal to `high` value')
-    }
-
-*/
-
 function height<T extends Interval>(node?: Node<T>) {
   if (node === undefined) {
     return -1
@@ -458,6 +451,9 @@ export class IntervalTree<T extends Interval> {
   public count = 0
 
   public insert(record: T) {
+    if (record.low > record.high) {
+      throw new Error('`low` value must be lower or equal to `high` value')
+    }
 
     if (this.root === undefined) {
       // Base case: Tree is empty, new node becomes root
