@@ -147,6 +147,26 @@ describe('Interval tree', () => {
       const searchResult = tree.search(75, 150)
       expect(searchResult.length).to.eql(0)
     })
+
+    it('should be inclusive', () => {
+      const tree = new IntervalTree<StringInterval>()
+
+      tree.insert(getInterval(50, 150, 'data1'))
+      tree.insert(getInterval(75, 200, 'data2'))
+
+      const search1 = tree.search(50, 100)
+      expect(search1[0].data).to.eql('data1')
+      expect(search1[1].data).to.eql('data2')
+      expect(search1.length).to.eql(2)
+
+      const search2 = tree.search(0, 50)
+      expect(search2[0].data).to.eql('data1')
+      expect(search2.length).to.eql(1)
+
+      const search3 = tree.search(200, 300)
+      expect(search3[0].data).to.eql('data2')
+      expect(search3.length).to.eql(1)
+    })
   })
 
   describe('delete', () => {
