@@ -4,23 +4,22 @@
 // Both insertion and deletion require O(log n) time. Searching requires O(k*logn) time, where `k`
 // is the number of intervals in the output list.
 
-import isSame = require('immutable-is')
+import isSame = require('shallowequal')
 import 'core-js/es6/symbol'
 
-export class Interval {
-  constructor(public low: number, public high: number) {
-    if (low > high) {
+export interface Interval {
+  readonly low: number
+  readonly high: number
+}
+
+/*
+if (low > high) {
       throw new Error('`low` value must be lower or equal to `high` value')
     }
-  }
-}
 
-export class Record<T> {
-  constructor(public interval: Interval, public data: T) {
-  }
-}
+*/
 
-function height<T>(node?: Node<T>) {
+function height<T extends Interval>(node?: Node<T>) {
   if (node === undefined) {
     return -1
   } else {
@@ -28,36 +27,31 @@ function height<T>(node?: Node<T>) {
   }
 }
 
-export class Node<T> {
+export class Node<T extends Interval> {
   public key: number
   public max: number
-  public records: Record<T>[] = []
+  public records: T[] = []
   public parent?: Node<T>
   public height = 0
   public left?: Node<T>
   public right?: Node<T>
 
-  public static overlappingRecords: any[]
 
-
-  constructor(public intervalTree: IntervalTree<T>, record: Record<T>) {
-    this.key = record.interval.low
-    this.max = record.interval.high
+  constructor(public intervalTree: IntervalTree<T>, record: T) {
+    this.key = record.low
+    this.max = record.high
 
     // Save the array of all records with the same key for this node
     this.records.push(record)
-
-    // Save the results of search in a static variable
-    Node.overlappingRecords = []
   }
 
-  // Gets the highest record.interval.high value for this node
+  // Gets the highest record.high value for this node
   public getNodeHigh() {
-    let high = this.records[0].interval.high
+    let high = this.records[0].high
 
     for (let i = 1; i < this.records.length; i++) {
-      if (this.records[i].interval.high > high) {
-        high = this.records[i].interval.high
+      if (this.records[i].high > high) {
+        high = this.records[i].high
       }
     }
 
@@ -284,8 +278,8 @@ export class Node<T> {
     }
   }
 
-  public insert(record: Record<T>) {
-    if (record.interval.low < this.key) {
+  public insert(record: T) {
+    if (record.low < this.key) {
       // Insert into left subtree
       if (this.left === undefined) {
         this.left = new Node(this.intervalTree, record)
@@ -304,8 +298,8 @@ export class Node<T> {
     }
 
     // Update the max value of this ancestor if needed
-    if (this.max < record.interval.high) {
-      this.max = record.interval.high
+    if (this.max < record.high) {
+      this.max = record.high
     }
 
     // Update height of each node
@@ -320,56 +314,54 @@ export class Node<T> {
   private _getOverlappingRecords(currentNode: Node<T>, low: number, high: number) {
     if (currentNode.key <= high && low <= currentNode.getNodeHigh()) {
       // Nodes are overlapping, check if individual records in the node are overlapping
-      const tempResults: any[] = []
+      const tempResults: T[] = []
       for (let i = 0; i < currentNode.records.length; i++) {
-        if (currentNode.records[i].interval.high >= low) {
-          tempResults.push(currentNode.records[i].data)
+        if (currentNode.records[i].high >= low) {
+          tempResults.push(currentNode.records[i])
         }
       }
       return tempResults
     }
-    return undefined
+    return []
   }
 
   public search(low: number, high: number) {
     // Don't search nodes that don't exist
     if (this === undefined) {
-      return Node.overlappingRecords
+      return []
     }
+
+    let leftSearch: T[] = []
+    let ownSearch: T[] = []
+    let rightSearch: T[] = []
 
     // If interval is to the right of the rightmost point of any interval in this node and all its
     // children, there won't be any matches
     if (low > this.max) {
-      return Node.overlappingRecords
+      return []
     }
 
     // Search left children
     if (this.left !== undefined && this.left.max >= low) {
-      this.left.search(low, high)
+      leftSearch = this.left.search(low, high)
     }
 
     // Check this node
-    const tempResults = this._getOverlappingRecords(this, low, high)
-    if (tempResults !== undefined) {
-      // Add overlapping records from this node to already existing, if any, overlapping records
-      for (let i = 0; i < tempResults.length; i++) {
-        Node.overlappingRecords.push(tempResults[i])
-      }
-    }
+    ownSearch = this._getOverlappingRecords(this, low, high)
 
     // If interval is to the left of the start of this interval, then it can't be in any child to
     // the right
     if (high < this.key) {
-      return Node.overlappingRecords
+      return leftSearch.concat(ownSearch)
     }
 
     // Otherwise, search right children
     if (this.right !== undefined) {
-      this.right.search(low, high)
+      rightSearch = this.right.search(low, high)
     }
 
     // Return accumulated results, if any
-    return Node.overlappingRecords
+    return leftSearch.concat(ownSearch, rightSearch)
   }
 
   // Searches for a node by a `key` value
@@ -461,13 +453,11 @@ export class Node<T> {
   }
 }
 
-export default class IntervalTree<T> {
+export class IntervalTree<T extends Interval> {
   public root?: Node<T>
   public count = 0
 
-  public insert(low: number, high: number, data: T) {
-    const interval = new Interval(low, high)
-    const record = new Record(interval, data)
+  public insert(record: T) {
 
     if (this.root === undefined) {
       // Base case: Tree is empty, new node becomes root
@@ -476,11 +466,11 @@ export default class IntervalTree<T> {
       return true
     } else {
       // Otherwise, check if node already exists with the same key
-      const node = this.root.searchExisting(low)
+      const node = this.root.searchExisting(record.low)
       if (node !== undefined) {
         // Check the records in this node if there already is the one with same low, high, data
         for (let i = 0; i < node.records.length; i++) {
-          if (node.records[i].interval.high === high && isSame(node.records[i].data, data)) {
+          if (isSame(node.records[i], record)) {
             // This record is same as the one we're trying to insert; return false to indicate
             // nothing has been inserted
             return false
@@ -491,8 +481,8 @@ export default class IntervalTree<T> {
         node.records.push(record)
 
         // Update max of the node and its parents if necessary
-        if (high > node.max) {
-          node.max = high
+        if (record.high > node.max) {
+          node.max = record.high
           if (node.parent) {
             node.parent.updateMaxOfParents()
           }
@@ -513,26 +503,23 @@ export default class IntervalTree<T> {
       // Tree is empty; return empty array
       return []
     } else {
-      if (Node.overlappingRecords.length > 0) {
-        Node.overlappingRecords.length = 0
-      }
       return this.root.search(low, high)
     }
   }
 
-  public remove(low: number, high: number, data?: any) {
+  public remove(record: T) {
     if (this.root === undefined) {
       // Tree is empty; nothing to remove
       return false
     } else {
-      const node = this.root.searchExisting(low)
+      const node = this.root.searchExisting(record.low)
       if (node === undefined) {
         return false
       } else if (node.records.length > 1) {
-        let removedRecord: Record<T> | undefined
+        let removedRecord: T | undefined
         // Node with this key has 2 or more records. Find the one we need and remove it
         for (let i = 0; i < node.records.length; i++) {
-          if (node.records[i].interval.high === high && isSame(node.records[i].data, data)) {
+          if (isSame(node.records[i], record)) {
             removedRecord = node.records[i]
             node.records.splice(i, 1)
             break
@@ -542,7 +529,7 @@ export default class IntervalTree<T> {
         if (removedRecord) {
           removedRecord = undefined
           // Update max of that node and its parents if necessary
-          if (high === node.max) {
+          if (record.high === node.max) {
             const nodeHigh = node.getNodeHigh()
             if (node.left !== undefined && node.right !== undefined) {
               node.max = Math.max(Math.max(node.left.max, node.right.max), nodeHigh)
@@ -565,14 +552,12 @@ export default class IntervalTree<T> {
       } else if (node.records.length === 1) {
         // Node with this key has only 1 record. Check if the remaining record in this node is
         // actually the one we want to remove
-        if (node.records[0].interval.high === high && isSame(node.records[0].data, data)) {
+        if (isSame(node.records[0], record)) {
           // The remaining record is the one we want to remove. Remove the whole node from the tree
           if (this.root.key === node.key) {
             // We're removing the root element. Create a dummy node that will temporarily take
             // root's parent role
-            const interval = new Interval(low, high)
-            const record = new Record(interval, data)
-            const rootParent = new Node(this, record)
+            const rootParent = new Node<T>(this, { low: record.low, high: record.low} as T)
             rootParent.left = this.root
             this.root.parent = rootParent
             let removedNode = this.root.remove(node)
@@ -617,7 +602,39 @@ export default class IntervalTree<T> {
   }
 }
 
-export class InOrder<T> implements IterableIterator<Record<T>> {
+export interface DataInterval<T> extends Interval {
+  data: T
+}
+
+export default class DataIntervalTree<T> {
+  private tree = new IntervalTree<DataInterval<T>>()
+
+  public insert(low: number, high: number, data: T) {
+    return this.tree.insert({ low, high, data})
+  }
+
+  public remove(low: number, high: number, data: T) {
+    return this.tree.remove({ low, high, data})
+  }
+
+  public search(low: number, high: number) {
+    return this.tree.search(low, high).map(v => v.data)
+  }
+
+  public inOrder() {
+    return this.tree.inOrder()
+  }
+
+  public preOrder() {
+    return this.tree.preOrder()
+  }
+
+  get count () {
+    return this.tree.count
+  }
+}
+
+export class InOrder<T extends Interval> implements IterableIterator<T> {
   private stack: Node<T>[] = []
 
   private currentNode?: Node<T>
@@ -629,7 +646,7 @@ export class InOrder<T> implements IterableIterator<Record<T>> {
     }
   }
 
-  public next(): IteratorResult<Record<T>> {
+  public next(): IteratorResult<T> {
     // Will only happen if stack is empty and pop is called
     if (this.currentNode === undefined) {
       return {
@@ -654,7 +671,7 @@ export class InOrder<T> implements IterableIterator<Record<T>> {
     return this.next()
   }
 
-  public [Symbol.iterator](): IterableIterator<Record<T>> {
+  public [Symbol.iterator](): IterableIterator<T> {
     return this
   }
 
@@ -674,7 +691,7 @@ export class InOrder<T> implements IterableIterator<Record<T>> {
   }
 }
 
-export class PreOrder<T> implements IterableIterator<Record<T>> {
+export class PreOrder<T extends Interval> implements IterableIterator<T> {
   private stack: Node<T>[] = []
 
   private currentNode?: Node<T>
@@ -684,7 +701,7 @@ export class PreOrder<T> implements IterableIterator<Record<T>> {
     this.currentNode = startNode
   }
 
-  public next(): IteratorResult<Record<T>> {
+  public next(): IteratorResult<T> {
     // Will only happen if stack is empty and pop is called,
     // which only happens if there is no right node (i.e we are done)
     if (this.currentNode === undefined) {
@@ -711,7 +728,7 @@ export class PreOrder<T> implements IterableIterator<Record<T>> {
     return this.next()
   }
 
-  public [Symbol.iterator](): IterableIterator<Record<T>> {
+  public [Symbol.iterator](): IterableIterator<T> {
     return this
   }
 
