@@ -6,38 +6,77 @@ An [Interval Tree](https://en.wikipedia.org/wiki/Interval_tree) data structure i
 [![NPM](https://nodei.co/npm/node-interval-tree.png)](https://nodei.co/npm/node-interval-tree/)
 
 ## Usage
-#### `import IntervalTree from 'node-interval-tree'`
-#### `const intervalTree = new IntervalTree()`
+```JavaScript
+import IntervalTree from 'node-interval-tree'
+const intervalTree = new IntervalTree()
+```
 
-<b><code>intervalTree.insert(low, high[, data])</code></b>
+### Insert
+```JavaScript
+intervalTree.insert(low, high, data)
+```
 
-Insert an interval into the tree. An optional data can be associated with the interval as well. This makes it possible to insert intervals with the same low and high value, as long as their data is different. Data can be any JS primitive or object.
-
-* `low` - a low value of the interval
-* `high` - a high value of the interval
-* `data` - optional data to associate with this interval
-
+Insert an interval with associated data into the tree. Intervals with the same low and high value can be inserted, as long as their data is different.
+Data can be any JS primitive or object.  
+`low` and `high` have to be numbers where `low <= high` (also the case for all other operations with `low` and `high`).  
 Returns true if successfully inserted, false if nothing inserted.
 
-<b><code>intervalTree.search(low, high)</code></b>
+### Search
+```JavaScript
+intervalTree.search(low, high)
+```
 
-Search all intervals that overlap low and high arguments, both of them included. Low and high values don't need to be in the tree themselves.
+Search all intervals that overlap low and high arguments, both of them inclusive. Low and high values don't need to be in the tree themselves.  
+Returns an array of all data objects of the intervals in the range [low, high]; doesn't return the intervals themselves.
 
-* `low` - a low value to search
-* `high` - a high value to search
+### Remove
+```JavaScript
+intervalTree.remove(low, high, data)
+```
 
-Returns an array of all data objects that are associated with each interval found; doesn't return the intervals themselves.
-
-<b><code>intervalTree.remove(low, high[, data])</code></b>
-
-Remove an interval from the tree. Data is an optional argument, same as with insert. To remove an interval, all arguments must match the one in tree.
-
-* `low` - a low value of the interval
-* `high` - a high value of the interval
-* `data` - optional data argument
-
+Remove an interval from the tree. To remove an interval, all arguments must match the one in the tree.  
 Returns true if successfully removed, false if nothing removed.
 
+## Advanced usage
+The default export is convenient to use but can be too limiting for some.
+`exports.IntervalTree` operate on `Interval` directly, giving you access to the `low` and `high` values in the results.
+You can attach extra properties to `Interval` but they should not be modified after insertion as objects in the tree are compared according to shallow equality. 
+
+```TypeScript
+interface Interval {
+  readonly low: number
+  readonly high: number
+}
+```
+```JavaScript
+import { IntervalTree } from 'node-interval-tree'
+const intervalTree = new IntervalTree()
+
+```
+### Insert
+```JavaScript
+intervalTree.insert({ low, high })
+intervalTree.insert({ low, high, name: 'foo' })
+```
+Insert an interval into the tree. Intervals are compared according to shallow equality and only inserted if unique.  
+Returns true if successfully inserted, false if nothing inserted.
+
+### Search
+```JavaScript
+intervalTree.search(low, high)
+```
+
+Search all intervals that overlap low and high arguments, both of them inclusive. Low and high values don't need to be in the tree themselves.  
+Returns an array of all intervals in the range [low, high].
+
+### Remove
+```JavaScript
+intervalTree.remove({ low, high })
+intervalTree.remove({ low, high, name: 'foo' })
+```
+
+Remove an interval from the tree. Intervals are compared according to shallow equality and only removed if all properties match.  
+Returns true if successfully removed, false if nothing removed.
 ## Example
 ```javascript
 import IntervalTree from 'node-interval-tree'
@@ -53,6 +92,8 @@ intervalTree.insert(10, 15, 'baz') // -> true
 
 intervalTree.search(12, 20) // -> ['foo', 'baz']
 ```
+
+More examples can be found in the demo folder
 
 ## Typescript users
 Types are included in the package but the exposed types rely on some global modules that can't be included automatically.
