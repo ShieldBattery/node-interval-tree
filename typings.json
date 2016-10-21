@@ -5,6 +5,7 @@
   "globalDependencies": {
     "core-js": "registry:dt/core-js#0.0.0+20160914114559",
     "cuid": "registry:dt/cuid#0.0.0+20160316155526",
-    "mocha": "registry:dt/mocha#2.2.5+20160720003353"
+    "mocha": "registry:dt/mocha#2.2.5+20160720003353",
+    "shallowequal": "registry:dt/shallowequal#0.2.2+20160928205935"
   }
 }
