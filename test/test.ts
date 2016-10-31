@@ -135,7 +135,6 @@ describe('Interval tree', () => {
       const high = 10
       const low = 15
 
-
       expect(() => tree.insert({ low, high })).to.throw(Error)
     })
   })

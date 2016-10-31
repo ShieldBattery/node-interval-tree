@@ -7,7 +7,14 @@
     "sourceMap": true,
     "declaration": true,
     "moduleResolution": "node",
-    "outDir": "lib"
+    "outDir": "lib",
+    "types": [ // Workaround for https://github.com/TypeStrong/ts-node/issues/216
+      "chai",
+      "core-js",
+      "cuid",
+      "mocha",
+      "shallowequal"
+    ]
   },
   "exclude": [
     "node_modules"
