@@ -29,7 +29,6 @@ export class Node<T extends Interval> {
   public left?: Node<T>
   public right?: Node<T>
 
-
   constructor(public intervalTree: IntervalTree<T>, record: T) {
     this.key = record.low
     this.max = record.high
@@ -241,7 +240,7 @@ export class Node<T extends Interval> {
     leftChild.updateHeight()
   }
 
-   // Rebalances the tree if the height value between two nodes of the same parent is greater than
+  // Rebalances the tree if the height value between two nodes of the same parent is greater than
   // two. There are 4 cases that can happen which are outlined in the graphics above
   private _rebalance() {
     if (height(this.left) >= 2 + height(this.right)) {
