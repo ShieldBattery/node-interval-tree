@@ -7,7 +7,7 @@
     "autotest": "npm run test -- --watch",
     "build": "tsc",
     "clean": "rimraf lib",
-    "lint": "tslint '**/*.ts'",
+    "lint": "tslint '**/*.ts' --exclude \"**/node_modules/**\" --exclude \"**/typings/**\"",
     "prepublish": "npm run lint  && npm run clean && npm run test && npm run build",
     "test": "mocha -R spec --compilers ts:ts-node/register test/*.ts"
   },
