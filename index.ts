@@ -644,7 +644,8 @@ export class InOrder<T extends Interval> implements IterableIterator<T> {
     if (this.currentNode === undefined) {
       return {
         done: true,
-      }
+        value: undefined,
+      } as any as IteratorResult<T>
     }
 
     // Process this node
@@ -700,7 +701,8 @@ export class PreOrder<T extends Interval> implements IterableIterator<T> {
     if (this.currentNode === undefined) {
       return {
         done: true,
-      }
+        value: undefined,
+      } as any as IteratorResult<T>
     }
 
     // Process this node
