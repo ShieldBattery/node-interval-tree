@@ -1,7 +1,7 @@
 import DataIntervalTree from '../index' // import IntervalTree from 'node-interval-tree'
 import cuid = require('cuid')
 
-const intervalTree = new DataIntervalTree<String>()
+const intervalTree = new DataIntervalTree<string>()
 
 /* Usage:
 insert - intervalTree.insert(low: number, high: number, data: T) =>

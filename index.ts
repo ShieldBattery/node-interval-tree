@@ -79,7 +79,6 @@ export class Node<T extends Interval> {
     }
   }
 
-
   /*
   Left-Left case:
 
@@ -301,7 +300,6 @@ export class Node<T extends Interval> {
     // important in searching, as the tree has a high chance of degenerating without the rebalancing
     this._rebalance()
   }
-
 
   private _getOverlappingRecords(currentNode: Node<T>, low: number, high: number) {
     if (currentNode.key <= high && low <= currentNode.getNodeHigh()) {
@@ -624,7 +622,7 @@ export default class DataIntervalTree<T> {
     return this.tree.preOrder()
   }
 
-  get count () {
+  get count() {
     return this.tree.count
   }
 }
@@ -674,7 +672,7 @@ export class InOrder<T extends Interval> implements IterableIterator<T> {
     this.currentNode = node
     this.i = 0
 
-    while(this.currentNode.left !== undefined) {
+    while (this.currentNode.left !== undefined) {
       this.stack.push(this.currentNode)
       this.currentNode = this.currentNode.left
     }
@@ -736,4 +734,3 @@ export class PreOrder<T extends Interval> implements IterableIterator<T> {
     this.i = 0
   }
 }
-

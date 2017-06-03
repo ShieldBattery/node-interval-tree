@@ -10,14 +10,19 @@
     /*
      * Any rules specified here will override those from the base config we are extending
      */
-     "semicolon": [true, "never"],
-     "interface-name": [true, "never-prefix"],
-     "align": [false],
-     "object-literal-sort-keys": false,
-     "linebreak-style": [true, "LF"],
-     "indent": [true, "spaces"],
-     "quotemark": [true, "single", "avoid-escape"],
-     "member-ordering": [false]
+    "semicolon": [true, "never"],
+    "interface-name": [true, "never-prefix"],
+    "align": [false],
+    "object-literal-sort-keys": false,
+    "linebreak-style": [true, "LF"],
+    "indent": [true, "spaces"],
+    "quotemark": [true, "single", "avoid-escape"],
+    "member-ordering": [false],
+    "no-console": false,
+    "prefer-for-of": false,
+    "arrow-parens": false,
+    "array-type": false,
+    "max-classes-per-file": false
   },
   "rulesDirectory": [
     /*
