@@ -1,6 +1,6 @@
 {
   "name": "node-interval-tree",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Implementation of interval tree data structure.",
   "main": "lib/index.js",
   "engines": {
