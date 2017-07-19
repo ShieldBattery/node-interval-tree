@@ -43,6 +43,7 @@
     "lib/index.js",
     "lib/index.js.map",
     "lib/index.d.ts",
+    "index.ts",
     "typings.json"
   ],
   "typings": "./lib/index.d.ts",
