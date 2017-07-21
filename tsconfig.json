@@ -1,7 +1,15 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es6",
+    "target": "es5",
+    "downlevelIteration": true,
+    "lib": [
+      "dom",
+      "es5",
+      "scripthost",
+      "es2015.collection",
+      "es2015.iterable"
+    ],
     "noImplicitAny": true,
     "strictNullChecks": true,
     "sourceMap": true,

@@ -244,7 +244,7 @@ describe('Interval tree', () => {
         [80, 90, 'data5'],
       ]
 
-      values.map(([low, high, data]) => ({low, high, data})).forEach(i => tree.insert(i))
+      values.map(([low, high, value]) => ({low, high, data: value})).forEach(i => tree.insert(i))
 
       const order = ['data3', 'data1', 'data4', 'data2', 'data5']
       const data = iteratorToArray(tree.inOrder()).map(v => v.data)
@@ -264,7 +264,7 @@ describe('Interval tree', () => {
         [80, 90, 'data5'],
       ]
 
-      values.map(([low, high, data]) => ({low, high, data})).forEach(i => tree.insert(i))
+      values.map(([low, high, value]) => ({low, high, data: value})).forEach(i => tree.insert(i))
 
       const order = ['data1', 'data3', 'data2', 'data4', 'data5']
       const data = iteratorToArray(tree.preOrder()).map(v => v.data)
