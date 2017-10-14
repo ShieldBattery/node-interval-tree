@@ -31,25 +31,22 @@
   },
   "homepage": "https://github.com/ShieldBattery/node-interval-tree",
   "dependencies": {
-    "@types/cuid": "1.3.0",
-    "@types/shallowequal": "^0.2.1",
-    "babel-preset-env": "^1.5.1",
     "core-js": "^2.4.1",
-    "cuid": "^1.3.8",
     "shallowequal": "^1.0.1"
   },
   "files": [
     "lib/index.js",
     "lib/index.js.map",
     "lib/index.d.ts",
-    "index.ts",
-    "typings.json"
+    "index.ts"
   ],
-  "typings": "./lib/index.d.ts",
   "devDependencies": {
     "@types/chai": "^4.0.0",
+    "@types/cuid": "^1.3.0",
     "@types/mocha": "^2.2.41",
+    "@types/shallowequal": "^0.2.1",
     "chai": "^4.0.1",
+    "cuid": "^1.3.8",
     "mocha": "^3.4.2",
     "rimraf": "^2.6.1",
     "ts-node": "^3.0.4",
