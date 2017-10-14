@@ -5,7 +5,6 @@
 // is the number of intervals in the output list.
 
 import isSame = require('shallowequal')
-import 'core-js/es6/symbol'
 
 export interface Interval {
   readonly low: number
@@ -665,10 +664,6 @@ export class InOrder<T extends Interval> implements IterableIterator<T> {
     return this.next()
   }
 
-  public [Symbol.iterator](): IterableIterator<T> {
-    return this
-  }
-
   private push(node: Node<T>) {
     this.currentNode = node
     this.i = 0
@@ -683,6 +678,15 @@ export class InOrder<T extends Interval> implements IterableIterator<T> {
     this.currentNode = this.stack.pop()
     this.i = 0
   }
+}
+
+// Only define `Symbol.iterator` in compatible environments.
+export interface InOrder<T extends Interval> {
+  [Symbol.iterator](): IterableIterator<T>
+}
+
+if (typeof Symbol === 'function') {
+  InOrder.prototype[Symbol.iterator] = function() { return this }
 }
 
 export class PreOrder<T extends Interval> implements IterableIterator<T> {
@@ -723,10 +727,6 @@ export class PreOrder<T extends Interval> implements IterableIterator<T> {
     return this.next()
   }
 
-  public [Symbol.iterator](): IterableIterator<T> {
-    return this
-  }
-
   private push(node: Node<T>) {
     this.stack.push(node)
   }
@@ -735,4 +735,13 @@ export class PreOrder<T extends Interval> implements IterableIterator<T> {
     this.currentNode = this.stack.pop()
     this.i = 0
   }
+}
+
+// Only define `Symbol.iterator` in compatible environments.
+export interface PreOrder<T extends Interval> {
+  [Symbol.iterator](): IterableIterator<T>
+}
+
+if (typeof Symbol === 'function') {
+  PreOrder.prototype[Symbol.iterator] = function() { return this }
 }

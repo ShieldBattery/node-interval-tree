@@ -31,7 +31,6 @@
   },
   "homepage": "https://github.com/ShieldBattery/node-interval-tree",
   "dependencies": {
-    "core-js": "^2.4.1",
     "shallowequal": "^1.0.1"
   },
   "files": [
