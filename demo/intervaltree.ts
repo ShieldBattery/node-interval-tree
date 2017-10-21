@@ -1,5 +1,5 @@
-import { Interval, IntervalTree } from '../index' // import IntervalTree from 'node-interval-tree'
 import cuid = require('cuid')
+import { Interval, IntervalTree } from '../index' // import IntervalTree from 'node-interval-tree'
 
 interface StringInterval extends Interval {
   data: string

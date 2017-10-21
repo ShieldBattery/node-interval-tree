@@ -1,5 +1,5 @@
-import DataIntervalTree from '../lib/index.js' // import IntervalTree from 'node-interval-tree'
 import cuid from 'cuid'
+import DataIntervalTree from '../lib/index.js' // import IntervalTree from 'node-interval-tree'
 
 const intervalTree = new DataIntervalTree()
 

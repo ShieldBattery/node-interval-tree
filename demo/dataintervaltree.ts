@@ -1,5 +1,5 @@
-import DataIntervalTree from '../index' // import IntervalTree from 'node-interval-tree'
 import cuid = require('cuid')
+import DataIntervalTree from '../index' // import IntervalTree from 'node-interval-tree'
 
 const intervalTree = new DataIntervalTree<string>()
 
