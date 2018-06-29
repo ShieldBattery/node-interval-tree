@@ -55,8 +55,8 @@ const intervalTree = new IntervalTree()
 ```
 ### Insert
 ```JavaScript
-intervalTree.insert({ low, high })
-intervalTree.insert({ low, high, name: 'foo' })
+intervalTree.insert({ low: 0, high: 10 })
+intervalTree.insert({ low: 0, high: 10, name: 'foo' })
 ```
 Insert an interval into the tree. Intervals are compared according to shallow equality and only inserted if unique.  
 Returns true if successfully inserted, false if nothing inserted.
@@ -71,8 +71,8 @@ Returns an array of all intervals in the range [low, high].
 
 ### Remove
 ```JavaScript
-intervalTree.remove({ low, high })
-intervalTree.remove({ low, high, name: 'foo' })
+intervalTree.remove({ low: 0, high: 10 })
+intervalTree.remove({ low: 0, high: 10, name: 'foo' })
 ```
 
 Remove an interval from the tree. Intervals are compared according to shallow equality and only removed if all properties match.  
