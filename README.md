@@ -13,7 +13,7 @@ const intervalTree = new IntervalTree()
 
 ### Insert
 ```JavaScript
-intervalTree.insert(low, high, data)
+intervalTree.insert({ low, high, ...data })
 ```
 
 Insert an interval with associated data into the tree. Intervals with the same low and high value can be inserted, as long as their data is different.
