@@ -230,6 +230,23 @@ describe('Interval tree', () => {
       const highest = highestMaxValue(randomTree)
       expect((randomTree.root as Node<StringInterval>).max).to.eql(highest.max)
     })
+
+    it('should work with BigInts', () => {
+      const tree = new IntervalTree<Interval<bigint>>()
+      const range = {
+        low: BigInt('0x456787654567876545'),
+        high: BigInt('0x876545678987654567'),
+      }
+
+      tree.insert(range)
+
+      const results = tree.search(
+        BigInt('0x456787654567876560'),
+        BigInt('0x4567876545678765FF'),
+      )
+
+      expect(results).to.eql([range])
+    })
   })
 
   describe('InOrder', () => {

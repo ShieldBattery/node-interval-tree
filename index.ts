@@ -6,9 +6,13 @@
 
 import isSame = require('shallowequal')
 
-export interface Interval {
-  readonly low: number
-  readonly high: number
+export interface Interval<N = number|bigint> {
+  readonly low: N
+  readonly high: N
+}
+
+function max<N = number|bigint>(a: N, b: N): N {
+  return a < b ? b : a
 }
 
 function height<T extends Interval>(node?: Node<T>) {
@@ -20,8 +24,8 @@ function height<T extends Interval>(node?: Node<T>) {
 }
 
 export class Node<T extends Interval> {
-  public key: number
-  public max: number
+  public key: T['low']
+  public max: T['low']
   public records: T[] = []
   public parent?: Node<T>
   public height = 0
@@ -51,7 +55,7 @@ export class Node<T extends Interval> {
 
   // Updates height value of the node. Called during insertion, rebalance, removal
   public updateHeight() {
-    this.height = Math.max(height(this.left), height(this.right)) + 1
+    this.height = max(height(this.left), height(this.right)) + 1
   }
 
   // Updates the max value of all the parents after inserting into already existing node, as well as
@@ -64,11 +68,11 @@ export class Node<T extends Interval> {
 
     const thisHigh = this.getNodeHigh()
     if (this.left !== undefined && this.right !== undefined) {
-      this.max = Math.max(Math.max(this.left.max, this.right.max), thisHigh)
+      this.max = max(max(this.left.max, this.right.max), thisHigh)
     } else if (this.left !== undefined && this.right === undefined) {
-      this.max = Math.max(this.left.max, thisHigh)
+      this.max = max(this.left.max, thisHigh)
     } else if (this.left === undefined && this.right !== undefined) {
-      this.max = Math.max(this.right.max, thisHigh)
+      this.max = max(this.right.max, thisHigh)
     } else {
       this.max = thisHigh
     }
@@ -107,30 +111,30 @@ export class Node<T extends Interval> {
     // Update max of left sibling (x in first case, y in second)
     const thisParentLeftHigh = left.getNodeHigh()
     if (left.left === undefined && left.right !== undefined) {
-      left.max = Math.max(thisParentLeftHigh, left.right.max)
+      left.max = max(thisParentLeftHigh, left.right.max)
     } else if (left.left !== undefined && left.right === undefined) {
-      left.max = Math.max(thisParentLeftHigh, left.left.max)
+      left.max = max(thisParentLeftHigh, left.left.max)
     } else if (left.left === undefined && left.right === undefined) {
       left.max = thisParentLeftHigh
     } else {
-      left.max = Math.max(Math.max((left.left as Node<T>).max,
+      left.max = max(max((left.left as Node<T>).max,
           (left.right as Node<T>).max), thisParentLeftHigh)
     }
 
     // Update max of itself (z)
     const thisHigh = this.getNodeHigh()
     if (this.left === undefined && this.right !== undefined) {
-      this.max = Math.max(thisHigh, this.right.max)
+      this.max = max(thisHigh, this.right.max)
     } else if (this.left !== undefined && this.right === undefined) {
-      this.max = Math.max(thisHigh, this.left.max)
+      this.max = max(thisHigh, this.left.max)
     } else if (this.left === undefined && this.right === undefined) {
       this.max = thisHigh
     } else {
-      this.max = Math.max(Math.max((this.left as Node<T>).max, (this.right as Node<T>).max), thisHigh)
+      this.max = max(max((this.left as Node<T>).max, (this.right as Node<T>).max), thisHigh)
     }
 
     // Update max of parent (y in first case, x in second)
-    parent.max = Math.max(Math.max((parent.left as Node<T>).max, (parent.right as Node<T>).max),
+    parent.max = max(max((parent.left as Node<T>).max, (parent.right as Node<T>).max),
         parent.getNodeHigh())
   }
 
@@ -163,30 +167,30 @@ export class Node<T extends Interval> {
     // Update max of right sibling (x in first case, y in second)
     const thisParentRightHigh = right.getNodeHigh()
     if (right.left === undefined && right.right !== undefined) {
-      right.max = Math.max(thisParentRightHigh, (right.right as Node<T>).max)
+      right.max = max(thisParentRightHigh, (right.right as Node<T>).max)
     } else if (right.left !== undefined && right.right === undefined) {
-      right.max = Math.max(thisParentRightHigh, (right.left as Node<T>).max)
+      right.max = max(thisParentRightHigh, (right.left as Node<T>).max)
     } else if (right.left === undefined && right.right === undefined) {
       right.max = thisParentRightHigh
     } else {
-      right.max = Math.max(Math.max((right.left as Node<T>).max,
+      right.max = max(max((right.left as Node<T>).max,
           (right.right as Node<T>).max), thisParentRightHigh)
     }
 
     // Update max of itself (z)
     const thisHigh = this.getNodeHigh()
     if (this.left === undefined && this.right !== undefined) {
-      this.max = Math.max(thisHigh, (this.right as Node<T>).max)
+      this.max = max(thisHigh, (this.right as Node<T>).max)
     } else if (this.left !== undefined && this.right === undefined) {
-      this.max = Math.max(thisHigh, (this.left as Node<T>).max)
+      this.max = max(thisHigh, (this.left as Node<T>).max)
     } else if (this.left === undefined && this.right === undefined) {
       this.max = thisHigh
     } else {
-      this.max = Math.max(Math.max((this.left as Node<T>).max, (this.right as Node<T>).max), thisHigh)
+      this.max = max(max((this.left as Node<T>).max, (this.right as Node<T>).max), thisHigh)
     }
 
     // Update max of parent (y in first case, x in second)
-    parent.max = Math.max(Math.max((parent.left as Node<T>).max, right.max),
+    parent.max = max(max((parent.left as Node<T>).max, right.max),
         parent.getNodeHigh())
   }
 
@@ -300,7 +304,7 @@ export class Node<T extends Interval> {
     this._rebalance()
   }
 
-  private _getOverlappingRecords(currentNode: Node<T>, low: number, high: number) {
+  private _getOverlappingRecords(currentNode: Node<T>, low: T['low'], high: T['high']) {
     if (currentNode.key <= high && low <= currentNode.getNodeHigh()) {
       // Nodes are overlapping, check if individual records in the node are overlapping
       const tempResults: T[] = []
@@ -314,7 +318,7 @@ export class Node<T extends Interval> {
     return []
   }
 
-  public search(low: number, high: number) {
+  public search(low: T['low'], high: T['high']) {
     // Don't search nodes that don't exist
     if (this === undefined) {
       return []
@@ -354,7 +358,7 @@ export class Node<T extends Interval> {
   }
 
   // Searches for a node by a `key` value
-  public searchExisting(low: number): Node<T> | undefined {
+  public searchExisting(low: T['low']): Node<T> | undefined {
     if (this === undefined) {
       return undefined
     }
@@ -490,7 +494,7 @@ export class IntervalTree<T extends Interval> {
     }
   }
 
-  public search(low: number, high: number) {
+  public search(low: T['low'], high: T['high']) {
     if (this.root === undefined) {
       // Tree is empty; return empty array
       return []
@@ -524,11 +528,11 @@ export class IntervalTree<T extends Interval> {
           if (record.high === node.max) {
             const nodeHigh = node.getNodeHigh()
             if (node.left !== undefined && node.right !== undefined) {
-              node.max = Math.max(Math.max(node.left.max, node.right.max), nodeHigh)
+              node.max = max(max(node.left.max, node.right.max), nodeHigh)
             } else if (node.left !== undefined && node.right === undefined) {
-              node.max = Math.max(node.left.max, nodeHigh)
+              node.max = max(node.left.max, nodeHigh)
             } else if (node.left === undefined && node.right !== undefined) {
-              node.max = Math.max(node.right.max, nodeHigh)
+              node.max = max(node.right.max, nodeHigh)
             } else {
               node.max = nodeHigh
             }
@@ -598,7 +602,7 @@ export interface DataInterval<T> extends Interval {
   data: T
 }
 
-export default class DataIntervalTree<T> {
+export default class DataIntervalTree<T extends Interval> {
   private tree = new IntervalTree<DataInterval<T>>()
 
   public insert(low: number, high: number, data: T) {
@@ -609,7 +613,7 @@ export default class DataIntervalTree<T> {
     return this.tree.remove({ low, high, data})
   }
 
-  public search(low: number, high: number) {
+  public search(low: T['low'], high: T['high']) {
     return this.tree.search(low, high).map(v => v.data)
   }
 
