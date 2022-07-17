@@ -17,11 +17,9 @@
     "moduleResolution": "node",
     "outDir": "lib"
   },
+  "include": ["./"],
   "exclude": [
     "node_modules",
     "lib"
-  ],
-  "files": [
-    "index.ts"
   ]
 }
