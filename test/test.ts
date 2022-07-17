@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import cuid = require('cuid')
+import cuid from 'cuid'
 import { Interval, IntervalTree, Node } from '../index'
 
 interface StringInterval extends Interval {
