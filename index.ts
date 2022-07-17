@@ -6,12 +6,12 @@
 
 import isSame = require('shallowequal')
 
-export interface Interval<N = number|bigint> {
+export interface Interval<N = number | bigint> {
   readonly low: N
   readonly high: N
 }
 
-function max<N = number|bigint>(a: N, b: N): N {
+function max<N = number | bigint>(a: N, b: N): N {
   return a < b ? b : a
 }
 
@@ -117,8 +117,10 @@ export class Node<T extends Interval> {
     } else if (left.left === undefined && left.right === undefined) {
       left.max = thisParentLeftHigh
     } else {
-      left.max = max(max((left.left as Node<T>).max,
-          (left.right as Node<T>).max), thisParentLeftHigh)
+      left.max = max(
+        max((left.left as Node<T>).max, (left.right as Node<T>).max),
+        thisParentLeftHigh,
+      )
     }
 
     // Update max of itself (z)
@@ -134,8 +136,10 @@ export class Node<T extends Interval> {
     }
 
     // Update max of parent (y in first case, x in second)
-    parent.max = max(max((parent.left as Node<T>).max, (parent.right as Node<T>).max),
-        parent.getNodeHigh())
+    parent.max = max(
+      max((parent.left as Node<T>).max, (parent.right as Node<T>).max),
+      parent.getNodeHigh(),
+    )
   }
 
   /*
@@ -173,8 +177,10 @@ export class Node<T extends Interval> {
     } else if (right.left === undefined && right.right === undefined) {
       right.max = thisParentRightHigh
     } else {
-      right.max = max(max((right.left as Node<T>).max,
-          (right.right as Node<T>).max), thisParentRightHigh)
+      right.max = max(
+        max((right.left as Node<T>).max, (right.right as Node<T>).max),
+        thisParentRightHigh,
+      )
     }
 
     // Update max of itself (z)
@@ -190,8 +196,7 @@ export class Node<T extends Interval> {
     }
 
     // Update max of parent (y in first case, x in second)
-    parent.max = max(max((parent.left as Node<T>).max, right.max),
-        parent.getNodeHigh())
+    parent.max = max(max((parent.left as Node<T>).max, right.max), parent.getNodeHigh())
   }
 
   private _leftRotate() {
@@ -202,9 +207,9 @@ export class Node<T extends Interval> {
       this.intervalTree.root = rightChild
     } else {
       if ((rightChild.parent as Node<T>).left === this) {
-        (rightChild.parent as Node<T>).left = rightChild
+        ;(rightChild.parent as Node<T>).left = rightChild
       } else if ((rightChild.parent as Node<T>).right === this) {
-        (rightChild.parent as Node<T>).right = rightChild
+        ;(rightChild.parent as Node<T>).right = rightChild
       }
     }
 
@@ -443,6 +448,9 @@ export class Node<T extends Interval> {
         return this
       }
     }
+
+    // Make linter happy
+    return undefined
   }
 }
 
@@ -553,7 +561,7 @@ export class IntervalTree<T extends Interval> {
           if (this.root.key === node.key) {
             // We're removing the root element. Create a dummy node that will temporarily take
             // root's parent role
-            const rootParent = new Node<T>(this, { low: record.low, high: record.low} as T)
+            const rootParent = new Node<T>(this, { low: record.low, high: record.low } as T)
             rootParent.left = this.root
             this.root.parent = rootParent
             let removedNode = this.root.remove(node)
@@ -606,11 +614,11 @@ export default class DataIntervalTree<T extends Interval> {
   private tree = new IntervalTree<DataInterval<T>>()
 
   public insert(low: number, high: number, data: T) {
-    return this.tree.insert({ low, high, data})
+    return this.tree.insert({ low, high, data })
   }
 
   public remove(low: number, high: number, data: T) {
-    return this.tree.remove({ low, high, data})
+    return this.tree.remove({ low, high, data })
   }
 
   public search(low: T['low'], high: T['high']) {
@@ -642,6 +650,10 @@ export class InOrder<T extends Interval> implements IterableIterator<T> {
     }
   }
 
+  [Symbol.iterator]() {
+    return this
+  }
+
   public next(): IteratorResult<T> {
     // Will only happen if stack is empty and pop is called
     if (this.currentNode === undefined) {
@@ -659,9 +671,11 @@ export class InOrder<T extends Interval> implements IterableIterator<T> {
       }
     }
 
-    if (this.currentNode.right !== undefined) { // Can we go right?
+    if (this.currentNode.right !== undefined) {
+      // Can we go right?
       this.push(this.currentNode.right)
-    } else { // Otherwise go up
+    } else {
+      // Otherwise go up
       // Might pop the last and set this.currentNode = undefined
       this.pop()
     }
@@ -684,23 +698,18 @@ export class InOrder<T extends Interval> implements IterableIterator<T> {
   }
 }
 
-// Only define `Symbol.iterator` in compatible environments.
-export interface InOrder<T extends Interval> {
-  [Symbol.iterator](): IterableIterator<T>
-}
-
-if (typeof Symbol === 'function') {
-  InOrder.prototype[Symbol.iterator] = function() { return this }
-}
-
 export class PreOrder<T extends Interval> implements IterableIterator<T> {
   private stack: Node<T>[] = []
 
   private currentNode?: Node<T>
-  private i: number = 0
+  private i = 0
 
   constructor(startNode?: Node<T>) {
     this.currentNode = startNode
+  }
+
+  [Symbol.iterator]() {
+    return this
   }
 
   public next(): IteratorResult<T> {
@@ -739,13 +748,4 @@ export class PreOrder<T extends Interval> implements IterableIterator<T> {
     this.currentNode = this.stack.pop()
     this.i = 0
   }
-}
-
-// Only define `Symbol.iterator` in compatible environments.
-export interface PreOrder<T extends Interval> {
-  [Symbol.iterator](): IterableIterator<T>
-}
-
-if (typeof Symbol === 'function') {
-  PreOrder.prototype[Symbol.iterator] = function() { return this }
 }

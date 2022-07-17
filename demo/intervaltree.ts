@@ -1,5 +1,5 @@
-import cuid = require('cuid')
-import { Interval, IntervalTree } from '../index' // import IntervalTree from 'node-interval-tree'
+import cuid from 'cuid'
+import { Interval, IntervalTree } from '../index'
 
 interface StringInterval extends Interval {
   data: string
@@ -19,7 +19,8 @@ Do not modify low or high after the interval has been inserted as this will ruin
 insert - intervalTree.insert(interval: Interval) =>
          inserts based on shallow equality
          true if success, false if nothing inserted (duplicate item)
-search - intervalTree.search(low: number, high: number) => [ Interval, Interval, Interval ], empty array if no result
+search - intervalTree.search(low: number, high: number) => [ Interval, Interval, Interval ] =>
+         empty array if no result
 remove - intervalTree.remove(interval: Interval) =>
          removes based on shallow equality
          true if success, false if nothing removed
@@ -39,7 +40,7 @@ for (let i = 1; i <= 100; i++) {
     low = temp
   }
 
-  intervalTree.insert({low, high, data: cuid()})
+  intervalTree.insert({ low, high, data: cuid() })
 }
 
 console.log('Number of the records in the tree: ' + intervalTree.count)

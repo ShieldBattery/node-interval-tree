@@ -11,7 +11,7 @@
     "autotest": "npm run test -- --watch",
     "build": "tsc",
     "clean": "rimraf lib",
-    "lint": "tslint '**/*.ts' --exclude \"**/lib/**\" --exclude \"**/node_modules/**\" --exclude \"**/typings/**\"",
+    "lint": "eslint --ext .js,.ts ./",
     "prepublishOnly": "npm run lint  && npm run clean && npm run test && npm run build",
     "test": "mocha -R spec --compilers ts:ts-node/register test/*.ts"
   },
@@ -44,12 +44,17 @@
     "@types/chai": "^4.3.1",
     "@types/mocha": "^2.2.44",
     "@types/shallowequal": "^1.1.1",
+    "@typescript-eslint/eslint-plugin": "^5.30.6",
+    "@typescript-eslint/parser": "^5.30.6",
     "chai": "^4.3.6",
     "cuid": "^2.1.8",
+    "eslint": "^8.20.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
     "mocha": "^10.0.0",
+    "prettier": "^2.7.1",
     "rimraf": "^3.0.2",
     "ts-node": "^10.9.1",
-    "tslint": "^5.8.0",
     "typescript": "^4.7.4"
   }
 }

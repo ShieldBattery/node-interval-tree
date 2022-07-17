@@ -79,7 +79,6 @@ function highestMaxValue<T extends Interval>(tree: IntervalTree<T>): Node<T> {
 }
 
 describe('Interval tree', () => {
-
   describe('insert', () => {
     it('should correctly insert into an empty tree', () => {
       const tree = new IntervalTree<StringInterval>()
@@ -172,7 +171,7 @@ describe('Interval tree', () => {
     it('should return false when trying to delete from an empty tree', () => {
       const tree = new IntervalTree<Interval>()
 
-      const isRemoved = tree.remove({low: 50, high: 100})
+      const isRemoved = tree.remove({ low: 50, high: 100 })
       expect(isRemoved).to.eql(false)
     })
 
@@ -240,10 +239,7 @@ describe('Interval tree', () => {
 
       tree.insert(range)
 
-      const results = tree.search(
-        BigInt('0x456787654567876560'),
-        BigInt('0x4567876545678765FF'),
-      )
+      const results = tree.search(BigInt('0x456787654567876560'), BigInt('0x4567876545678765FF'))
 
       expect(results).to.eql([range])
     })
@@ -261,7 +257,7 @@ describe('Interval tree', () => {
         [80, 90, 'data5'],
       ]
 
-      values.map(([low, high, value]) => ({low, high, data: value})).forEach(i => tree.insert(i))
+      values.map(([low, high, value]) => ({ low, high, data: value })).forEach(i => tree.insert(i))
 
       const order = ['data3', 'data1', 'data4', 'data2', 'data5']
       const data = iteratorToArray(tree.inOrder()).map(v => v.data)
@@ -281,7 +277,7 @@ describe('Interval tree', () => {
         [80, 90, 'data5'],
       ]
 
-      values.map(([low, high, value]) => ({low, high, data: value})).forEach(i => tree.insert(i))
+      values.map(([low, high, value]) => ({ low, high, data: value })).forEach(i => tree.insert(i))
 
       const order = ['data1', 'data3', 'data2', 'data4', 'data5']
       const data = iteratorToArray(tree.preOrder()).map(v => v.data)

@@ -1,13 +1,14 @@
-import cuid = require('cuid')
-import DataIntervalTree from '../index' // import IntervalTree from 'node-interval-tree'
+import cuid from 'cuid'
+import IntervalTree from '../index' // import IntervalTree from 'node-interval-tree'
 
-const intervalTree = new DataIntervalTree<string>()
+const intervalTree = new IntervalTree<string>()
 
 /* Usage:
 insert - intervalTree.insert(low: number, high: number, data: T) =>
          inserts based on shallow equality
          true if success, false if nothing inserted (duplicate item)
-search - intervalTree.search(low: number, high: number) => [ data, data, data, ... ], empty array if no result
+search - intervalTree.search(low: number, high: number) => [ data, data, data, ... ] =>
+         empty array if no result
 remove - intervalTree.remove(low: number, high: number, data: T) =>
          removes based on shallow equality
          true if success, false if nothing removed
