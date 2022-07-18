@@ -11,7 +11,7 @@ export interface Interval<N extends number | bigint = number> {
   readonly high: N
 }
 
-function max<N extends number | bigint = number>(a: N, b: N): N {
+function max<N extends number | bigint>(a: N, b: N): N {
   return a < b ? b : a
 }
 
