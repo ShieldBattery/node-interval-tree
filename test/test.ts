@@ -231,7 +231,7 @@ describe('Interval tree', () => {
     })
 
     it('should work with BigInts', () => {
-      const tree = new IntervalTree<Interval<bigint>>()
+      const tree = new IntervalTree<Interval<bigint>, bigint>()
       const range = {
         low: BigInt('0x456787654567876545'),
         high: BigInt('0x876545678987654567'),

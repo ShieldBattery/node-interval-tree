@@ -6,16 +6,16 @@
 
 import isSame = require('shallowequal')
 
-export interface Interval<N = number | bigint> {
+export interface Interval<N extends number | bigint = number> {
   readonly low: N
   readonly high: N
 }
 
-function max<N = number | bigint>(a: N, b: N): N {
+function max<N extends number | bigint = number>(a: N, b: N): N {
   return a < b ? b : a
 }
 
-function height<T extends Interval>(node?: Node<T>) {
+function height<T extends Interval<N>, N extends number | bigint = number>(node?: Node<T, N>) {
   if (node === undefined) {
     return -1
   } else {
@@ -23,16 +23,16 @@ function height<T extends Interval>(node?: Node<T>) {
   }
 }
 
-export class Node<T extends Interval> {
-  public key: T['low']
-  public max: T['low']
+export class Node<T extends Interval<N>, N extends number | bigint = number> {
+  public key: N
+  public max: N
   public records: T[] = []
-  public parent?: Node<T>
+  public parent?: Node<T, N>
   public height = 0
-  public left?: Node<T>
-  public right?: Node<T>
+  public left?: Node<T, N>
+  public right?: Node<T, N>
 
-  constructor(public intervalTree: IntervalTree<T>, record: T) {
+  constructor(public intervalTree: IntervalTree<T, N>, record: T) {
     this.key = record.low
     this.max = record.high
 
@@ -106,8 +106,8 @@ export class Node<T extends Interval> {
 
   // Handles Left-Left case and Left-Right case after rebalancing AVL tree
   private _updateMaxAfterRightRotate() {
-    const parent = this.parent as Node<T>
-    const left = parent.left as Node<T>
+    const parent = this.parent!
+    const left = parent.left!
     // Update max of left sibling (x in first case, y in second)
     const thisParentLeftHigh = left.getNodeHigh()
     if (left.left === undefined && left.right !== undefined) {
@@ -133,10 +133,7 @@ export class Node<T extends Interval> {
     }
 
     // Update max of parent (y in first case, x in second)
-    parent.max = max(
-      max((parent.left as Node<T>).max, (parent.right as Node<T>).max),
-      parent.getNodeHigh(),
-    )
+    parent.max = max(max(parent.left!.max, parent.right!.max), parent.getNodeHigh())
   }
 
   /*
@@ -163,8 +160,8 @@ export class Node<T extends Interval> {
 
   // Handles Right-Right case and Right-Left case in rebalancing AVL tree
   private _updateMaxAfterLeftRotate() {
-    const parent = this.parent as Node<T>
-    const right = parent.right as Node<T>
+    const parent = this.parent!
+    const right = parent.right!
     // Update max of right sibling (x in first case, y in second)
     const thisParentRightHigh = right.getNodeHigh()
     if (right.left === undefined && right.right !== undefined) {
@@ -190,11 +187,11 @@ export class Node<T extends Interval> {
     }
 
     // Update max of parent (y in first case, x in second)
-    parent.max = max(max((parent.left as Node<T>).max, right.max), parent.getNodeHigh())
+    parent.max = max(max(parent.left!.max, right.max), parent.getNodeHigh())
   }
 
   private _leftRotate() {
-    const rightChild = this.right as Node<T>
+    const rightChild = this.right!
     rightChild.parent = this.parent
 
     if (rightChild.parent === undefined) {
@@ -218,7 +215,7 @@ export class Node<T extends Interval> {
   }
 
   private _rightRotate() {
-    const leftChild = this.left as Node<T>
+    const leftChild = this.left!
     leftChild.parent = this.parent
 
     if (leftChild.parent === undefined) {
@@ -245,7 +242,7 @@ export class Node<T extends Interval> {
   // two. There are 4 cases that can happen which are outlined in the graphics above
   private _rebalance() {
     if (height(this.left) >= 2 + height(this.right)) {
-      const left = this.left as Node<T>
+      const left = this.left!
       if (height(left.left) >= height(left.right)) {
         // Left-Left case
         this._rightRotate()
@@ -257,7 +254,7 @@ export class Node<T extends Interval> {
         this._updateMaxAfterRightRotate()
       }
     } else if (height(this.right) >= 2 + height(this.left)) {
-      const right = this.right as Node<T>
+      const right = this.right!
       if (height(right.right) >= height(right.left)) {
         // Right-Right case
         this._leftRotate()
@@ -303,7 +300,7 @@ export class Node<T extends Interval> {
     this._rebalance()
   }
 
-  private _getOverlappingRecords(currentNode: Node<T>, low: T['low'], high: T['high']) {
+  private _getOverlappingRecords(currentNode: Node<T, N>, low: N, high: N) {
     if (currentNode.key <= high && low <= currentNode.getNodeHigh()) {
       // Nodes are overlapping, check if individual records in the node are overlapping
       const tempResults: T[] = []
@@ -317,7 +314,7 @@ export class Node<T extends Interval> {
     return []
   }
 
-  public search(low: T['low'], high: T['high']) {
+  public search(low: N, high: N) {
     // Don't search nodes that don't exist
     if (this === undefined) {
       return []
@@ -357,7 +354,7 @@ export class Node<T extends Interval> {
   }
 
   // Searches for a node by a `key` value
-  public searchExisting(low: T['low']): Node<T> | undefined {
+  public searchExisting(low: N): Node<T, N> | undefined {
     if (this === undefined) {
       return undefined
     }
@@ -378,7 +375,7 @@ export class Node<T extends Interval> {
   }
 
   // Returns the smallest node of the subtree
-  private _minValue(): Node<T> {
+  private _minValue(): Node<T, N> {
     if (this.left === undefined) {
       return this
     } else {
@@ -386,8 +383,8 @@ export class Node<T extends Interval> {
     }
   }
 
-  public remove(node: Node<T>): Node<T> | undefined {
-    const parent = this.parent as Node<T>
+  public remove(node: Node<T, N>): Node<T, N> | undefined {
+    const parent = this.parent!
 
     if (node.key < this.key) {
       // Node to be removed is on the left side
@@ -448,8 +445,8 @@ export class Node<T extends Interval> {
   }
 }
 
-export class IntervalTree<T extends Interval> {
-  public root?: Node<T>
+export class IntervalTree<T extends Interval<N>, N extends number | bigint = number> {
+  public root?: Node<T, N>
   public count = 0
 
   public insert(record: T) {
@@ -496,7 +493,7 @@ export class IntervalTree<T extends Interval> {
     }
   }
 
-  public search(low: T['low'], high: T['high']) {
+  public search(low: N, high: N) {
     if (this.root === undefined) {
       // Tree is empty; return empty array
       return []
@@ -555,7 +552,7 @@ export class IntervalTree<T extends Interval> {
           if (this.root.key === node.key) {
             // We're removing the root element. Create a dummy node that will temporarily take
             // root's parent role
-            const rootParent = new Node<T>(this, { low: record.low, high: record.low } as T)
+            const rootParent = new Node<T, N>(this, { low: record.low, high: record.low } as T)
             rootParent.left = this.root
             this.root.parent = rootParent
             let removedNode = this.root.remove(node)
@@ -600,22 +597,22 @@ export class IntervalTree<T extends Interval> {
   }
 }
 
-export interface DataInterval<T> extends Interval {
+export interface DataInterval<T, N extends number | bigint = number> extends Interval<N> {
   data: T
 }
 
-export default class DataIntervalTree<T> {
-  private tree = new IntervalTree<DataInterval<T>>()
+export default class DataIntervalTree<T, N extends number | bigint = number> {
+  private tree = new IntervalTree<DataInterval<T, N>, N>()
 
-  public insert(low: number | bigint, high: number | bigint, data: T) {
+  public insert(low: N, high: N, data: T) {
     return this.tree.insert({ low, high, data })
   }
 
-  public remove(low: number | bigint, high: number | bigint, data: T) {
+  public remove(low: N, high: N, data: T) {
     return this.tree.remove({ low, high, data })
   }
 
-  public search(low: number | bigint, high: number | bigint) {
+  public search(low: N, high: N) {
     return this.tree.search(low, high).map(v => v.data)
   }
 
@@ -632,13 +629,15 @@ export default class DataIntervalTree<T> {
   }
 }
 
-export class InOrder<T extends Interval> implements IterableIterator<T> {
-  private stack: Node<T>[] = []
+export class InOrder<T extends Interval<N>, N extends number | bigint = number>
+  implements IterableIterator<T>
+{
+  private stack: Node<T, N>[] = []
 
-  private currentNode?: Node<T>
+  private currentNode?: Node<T, N>
   private i: number
 
-  constructor(startNode?: Node<T>) {
+  constructor(startNode?: Node<T, N>) {
     if (startNode !== undefined) {
       this.push(startNode)
     }
@@ -676,7 +675,7 @@ export class InOrder<T extends Interval> implements IterableIterator<T> {
     return this.next()
   }
 
-  private push(node: Node<T>) {
+  private push(node: Node<T, N>) {
     this.currentNode = node
     this.i = 0
 
@@ -692,13 +691,15 @@ export class InOrder<T extends Interval> implements IterableIterator<T> {
   }
 }
 
-export class PreOrder<T extends Interval> implements IterableIterator<T> {
-  private stack: Node<T>[] = []
+export class PreOrder<T extends Interval<N>, N extends number | bigint = number>
+  implements IterableIterator<T>
+{
+  private stack: Node<T, N>[] = []
 
-  private currentNode?: Node<T>
+  private currentNode?: Node<T, N>
   private i = 0
 
-  constructor(startNode?: Node<T>) {
+  constructor(startNode?: Node<T, N>) {
     this.currentNode = startNode
   }
 
@@ -734,7 +735,7 @@ export class PreOrder<T extends Interval> implements IterableIterator<T> {
     return this.next()
   }
 
-  private push(node: Node<T>) {
+  private push(node: Node<T, N>) {
     this.stack.push(node)
   }
 
