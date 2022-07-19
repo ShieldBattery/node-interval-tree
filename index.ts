@@ -601,6 +601,10 @@ export interface DataInterval<T, N extends number | bigint = number> extends Int
   data: T
 }
 
+/**
+ * The default export just wraps the `IntervalTree`, while providing a simpler API. Check out the
+ * README for description on how to use each.
+ */
 export default class DataIntervalTree<T, N extends number | bigint = number> {
   private tree = new IntervalTree<DataInterval<T, N>, N>()
 

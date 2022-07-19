@@ -1,5 +1,5 @@
 import cuid = require('cuid')
-import IntervalTree from '../index' // import IntervalTree from 'node-interval-tree'
+import IntervalTree from '../index'
 
 const intervalTree = new IntervalTree<string>()
 

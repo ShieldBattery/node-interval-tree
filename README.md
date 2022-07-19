@@ -6,82 +6,102 @@ An [Interval Tree](https://en.wikipedia.org/wiki/Interval_tree) data structure i
 [![NPM](https://nodei.co/npm/node-interval-tree.png)](https://nodei.co/npm/node-interval-tree/)
 
 ## Usage
-```JavaScript
+```ts
 import IntervalTree from 'node-interval-tree'
-const intervalTree = new IntervalTree()
+const intervalTree = new IntervalTree<string>()
 ```
 
 ### Insert
-```JavaScript
-intervalTree.insert(low, high, data)
+```ts
+intervalTree.insert(low, high, 'foo')
 ```
 
 Insert an interval with associated data into the tree. Intervals with the same low and high value can be inserted, as long as their data is different.
-Data can be any JS primitive or object.  
-`low` and `high` have to be numbers where `low <= high` (also the case for all other operations with `low` and `high`).  
+Data can be any JS primitive or object.
+`low` and `high` have to be numbers where `low <= high` (also the case for all other operations with `low` and `high`).
 Returns true if successfully inserted, false if nothing inserted.
 
 ### Search
-```JavaScript
+```ts
 intervalTree.search(low, high)
 ```
 
-Search all intervals that overlap low and high arguments, both of them inclusive. Low and high values don't need to be in the tree themselves.  
+Search all intervals that overlap low and high arguments, both of them inclusive. Low and high values don't need to be in the tree themselves.
 Returns an array of all data objects of the intervals in the range [low, high]; doesn't return the intervals themselves.
 
 ### Remove
-```JavaScript
-intervalTree.remove(low, high, data)
+```ts
+intervalTree.remove(low, high, 'foo')
 ```
 
-Remove an interval from the tree. To remove an interval, all arguments must match the one in the tree.  
+Remove an interval from the tree. To remove an interval, all arguments must match the one in the tree.
 Returns true if successfully removed, false if nothing removed.
 
 ## Advanced usage
 The default export is convenient to use but can be too limiting for some.
 `exports.IntervalTree` operate on `Interval` directly, giving you access to the `low` and `high` values in the results.
-You can attach extra properties to `Interval` but they should not be modified after insertion as objects in the tree are compared according to shallow equality. 
+You can attach extra properties to `Interval` but they should not be modified after insertion as objects in the tree are compared according to shallow equality.
 
-```TypeScript
-interface Interval {
-  readonly low: number
-  readonly high: number
+```ts
+import { Interval, IntervalTree } from 'node-interval-tree'
+
+interface StringInterval extends Interval {
+  name: string
 }
-```
-```JavaScript
-import { IntervalTree } from 'node-interval-tree'
-const intervalTree = new IntervalTree()
 
+const intervalTree = new IntervalTree<StringInterval>()
 ```
 ### Insert
-```JavaScript
+```ts
 intervalTree.insert({ low, high })
 intervalTree.insert({ low, high, name: 'foo' })
 ```
-Insert an interval into the tree. Intervals are compared according to shallow equality and only inserted if unique.  
+Insert an interval into the tree. Intervals are compared according to shallow equality and only inserted if unique.
 Returns true if successfully inserted, false if nothing inserted.
 
 ### Search
-```JavaScript
+```ts
 intervalTree.search(low, high)
 ```
 
-Search all intervals that overlap low and high arguments, both of them inclusive. Low and high values don't need to be in the tree themselves.  
+Search all intervals that overlap low and high arguments, both of them inclusive. Low and high values don't need to be in the tree themselves.
 Returns an array of all intervals in the range [low, high].
 
 ### Remove
-```JavaScript
+```ts
 intervalTree.remove({ low, high })
 intervalTree.remove({ low, high, name: 'foo' })
 ```
 
-Remove an interval from the tree. Intervals are compared according to shallow equality and only removed if all properties match.  
+Remove an interval from the tree. Intervals are compared according to shallow equality and only removed if all properties match.
 Returns true if successfully removed, false if nothing removed.
+
+## BigInt support
+The `low` and `high` values of the interval are of type `number` by default. However, the library
+offers support to use `bigint` type for interval keys instead.
+
+With default export:
+```ts
+import IntervalTree from 'node-interval-tree'
+const intervalTree = new IntervalTree<string, bigint>()
+```
+
+With advanced export:
+```ts
+import { Interval, IntervalTree } from 'node-interval-tree'
+
+interface StringInterval extends Interval<bigint> {
+  name: string
+}
+
+const intervalTree = new IntervalTree<StringInterval, bigint>()
+```
+
 ## Example
-```javascript
+```ts
 import IntervalTree from 'node-interval-tree'
 
-const intervalTree = new IntervalTree()
+const intervalTree = new IntervalTree<string>()
 intervalTree.insert(10, 15, 'foo') // -> true
 intervalTree.insert(35, 50, 'baz') // -> true
 
@@ -93,7 +113,7 @@ intervalTree.insert(10, 15, 'baz') // -> true
 intervalTree.search(12, 20) // -> ['foo', 'baz']
 ```
 
-More examples can be found in the demo folder
+More examples can be found in the demo folder.
 
 ## License
 
