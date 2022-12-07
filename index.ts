@@ -627,6 +627,10 @@ export default class DataIntervalTree<T, N extends number | bigint = number> {
   public inOrder() {
     return this.tree.inOrder()
   }
+  
+  public reverseInOrder() {
+    return this.tree.reverseInOrder()
+  }
 
   public preOrder() {
     return this.tree.preOrder()
