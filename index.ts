@@ -592,6 +592,10 @@ export class IntervalTree<T extends Interval<N>, N extends number | bigint = num
     return new InOrder(this.root)
   }
 
+  public reverseInOrder() {
+    return new ReverseInOrder(this.root)
+  }
+
   public preOrder() {
     return new PreOrder(this.root)
   }
@@ -692,6 +696,68 @@ export class InOrder<T extends Interval<N>, N extends number | bigint = number>
   private pop() {
     this.currentNode = this.stack.pop()
     this.i = 0
+  }
+}
+
+export class ReverseInOrder<T extends Interval<N>, N extends number | bigint = number>
+  implements IterableIterator<T>
+{
+  private stack: Node<T, N>[] = []
+
+  private currentNode?: Node<T, N>
+  private i: number
+
+  constructor(startNode?: Node<T, N>) {
+    if (startNode !== undefined) {
+      this.push(startNode)
+    }
+  }
+
+  [Symbol.iterator]() {
+    return this
+  }
+
+  public next(): IteratorResult<T> {
+    // Will only happen if stack is empty and pop is called
+    if (this.currentNode === undefined) {
+      return {
+        done: true,
+        value: undefined,
+      } as any as IteratorResult<T>
+    }
+
+    // Process this node
+    if (this.currentNode.records.length && this.i >= 0) {
+      return {
+        done: false,
+        value: this.currentNode.records[this.i--],
+      }
+    }
+
+    if (this.currentNode.left !== undefined) {
+      // Can we go left?
+      this.push(this.currentNode.left)
+    } else {
+      // Otherwise go up
+      // Might pop the last and set this.currentNode = undefined
+      this.pop()
+    }
+    return this.next()
+  }
+
+  private push(node: Node<T, N>) {
+    this.currentNode = node
+    this.i = 0
+
+    while (this.currentNode.right !== undefined) {
+      this.stack.push(this.currentNode)
+      this.currentNode = this.currentNode.right
+    }
+  }
+
+  private pop() {
+    this.currentNode = this.stack.pop()
+    this.i = (this.currentNode?.records.length ?? 0) - 1
   }
 }
 
