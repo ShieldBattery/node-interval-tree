@@ -751,11 +751,12 @@ export class ReverseInOrder<T extends Interval<N>, N extends number | bigint = n
 
   private push(node: Node<T, N>) {
     this.currentNode = node
-    this.i = 0
+    this.i = (this.currentNode?.records.length ?? 0) - 1
 
     while (this.currentNode.right !== undefined) {
       this.stack.push(this.currentNode)
       this.currentNode = this.currentNode.right
+      this.i = (this.currentNode?.records.length ?? 0) - 1
     }
   }
 
