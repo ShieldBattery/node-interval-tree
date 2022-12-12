@@ -285,6 +285,27 @@ describe('Interval tree', () => {
       const data = iteratorToArray(tree.reverseInOrder()).map(v => v.data)
       expect(data).to.eql(order)
     })
+
+    it('should traverse in reverse order even with equal elements at right of tree', () => {
+      const tree = new IntervalTree<StringInterval>()
+
+      const values: [number, number, string][] = [
+        [50, 150, 'data1'],
+        [75, 100, 'data2'],
+        [40, 100, 'data3'],
+        [60, 150, 'data4'],
+        [80, 90, 'data5'],
+        [85, 88, 'data6'],
+        [88, 89, 'data7'],
+        [88, 90, 'data8'],
+      ]
+
+      values.map(([low, high, value]) => ({ low, high, data: value })).forEach(i => tree.insert(i))
+
+      const order = ['data8', 'data7', 'data6', 'data5', 'data2', 'data4', 'data1', 'data3']
+      const data = iteratorToArray(tree.reverseInOrder()).map(v => v.data)
+      expect(data).to.eql(order)
+    })
   })
 
   describe('PreOrder', () => {
